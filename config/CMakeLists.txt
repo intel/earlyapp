@@ -30,5 +30,4 @@ SET(CONF_FILES
     )
 
 INSTALL(FILES ${CONF_FILES} DESTINATION
-${CMAKE_INSTALL_PREFIX}/usr/lib/systemd/system/)
-
+    ${CMAKE_INSTALL_PREFIX}/lib/systemd/system/)
