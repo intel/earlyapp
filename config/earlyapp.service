@@ -1,0 +1,15 @@
+[Unit]
+Description=GP2.0 Early application 
+DefaultDependencies=no
+Requires=ias.service cbc_attach.service
+After=ias.service cbc_attach.service
+
+[Service]
+Type=simple
+Environment=XDG_RUNTIME_DIR=/run/ias
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=GST_PLUGIN_PATH=/usr/lib/gstreamer-1.0
+ExecStart=/usr/bin/earlyapp --rvc-sound /usr/share/earlyapp/cambeep.wav --bootup-sound /usr/share/earlyapp/countdownbeeps.wav --splash-video /usr/share/earlyapp/countdown.mp4 --width 1920 --height 1080
+
+[Install]
+WantedBy=earlyapp.target
