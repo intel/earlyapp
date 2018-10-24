@@ -57,10 +57,18 @@ namespace earlyapp
         //  - loopInterval: Sleep interval for event observing.
         void observeAndNotify(bool keepObserve=true, long loopInterval=0);
 
+        // Inject a CBC event.
+        // This function doesn't keep previously injected.
+        // Any events not processed will be lost.
+        void injectEvent(CBCEvent::eCBCEvent ev);
+
 
     private:
         // Event device.
-        CBCEventDevice* m_pEvDev;
+        CBCEventDevice* m_pEvDev = nullptr;
+
+        // User injected event.
+        CBCEvent::eCBCEvent m_InjEv = CBCEvent::eGEARSTATUS_UNKNOWN;
 
         // Subscribers.
         std::set<CBCEventReceiver*> m_subs;

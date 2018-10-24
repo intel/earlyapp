@@ -46,3 +46,16 @@ https://opensource.org/licenses/MIT
   ```
 
 
+## Compilation options
+ - USE_LOGOUTPUT
+ : Enable detailed log output to standard out.
+```shell
+$ cmake -DUSE_LOGOUTPUT=ON .
+```
+
+ - USE_DMESGLOG
+ : Enable log output to dmesg.
+```shell
+$ cmake -DUSE_DMESGLOG=ON .
+```
+

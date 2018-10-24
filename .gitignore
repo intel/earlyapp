@@ -1,0 +1,11 @@
+*~
+*.o
+ea_test
+earlyapp
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+CMakeFiles/
+Makefile
+googletest-release-1.8.0/*
+

@@ -24,7 +24,9 @@
 SET(CONF_FILES
     earlyapp.service
     earlyapp.target
-    weston.service
+    earlyapp.slice
+    ias.service
+    ias-pre.service
     cbc_attach.service
     earlyapp_resume.service
     )

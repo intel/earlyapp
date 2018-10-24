@@ -21,33 +21,55 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include <iostream>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include "EALog.h"
 
-#include "CBCEventDevice.hpp"
-#include "CBCEvent.hpp"
 
-namespace earlyapp
+#ifdef USE_DMESGLOG
+int dmesg_fd = 0;
+
+int dmesgLogInit(void)
 {
-    /*
-      A virtual CBC Event device for debugging.
-     */
-    class VirtualCBCEventDevice: public CBCEventDevice
+    dmesg_fd = open("/dev/kmsg", O_RDWR);
+    if (dmesg_fd < 0)
     {
-    public:
-        // Constructor.
-        // - cbcDevice: Path for CBC device node.
-        VirtualCBCEventDevice(const char* cbcDevice=nullptr);
+        return(-1);
+    }
+    return 0;
+}
 
-        // Destructor.
-        virtual ~VirtualCBCEventDevice(void);
+/*
+ Enabel logging to dmesg
+ Example: 
+ dmesgLogPrint(("testing-gst-init"); 
+ */
+int dmesgLogPrint(const char* stringPtr)
+{
+    int ret = -1;
 
-        // Read CBC event.
-        std::shared_ptr<CBCEvent> readEvent(void);
+    if (dmesg_fd > 0)
+    {
+        ret=write(dmesg_fd, stringPtr, strlen(stringPtr)+1);	    
+    }
 
-    private:
-        char* m_pFileName = nullptr;
-        int m_fdCBCDev = -1;
-    };
-} // namespace
+    return(ret);
+}
 
+
+
+int dmesgLogClose(void)
+{
+    int ret = -1;
+
+    if (dmesg_fd > 0)
+    {
+        ret=close(dmesg_fd);
+    }
+
+    return(ret);
+}
+#endif
 

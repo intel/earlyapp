@@ -37,7 +37,7 @@
 namespace earlyapp
 {
     // Definitions.
-    const int Configuration::DONT_CARE = -1;
+    const int Configuration::DONT_CARE = 0;
 
 
     // Default values.
@@ -137,19 +137,33 @@ namespace earlyapp
 
     const std::string& Configuration::stringMappedValueOf(const char* key)
     {
-        return m_VM[key].as<std::string>();
+        const std::string nullStr = std::string("null");
+        const std::string* valueStr;
+
+        try
+        {
+            valueStr = &(m_VM[key].as<std::string>());
+        }
+        catch(const boost::bad_any_cast&)
+        {
+            LERR_(TAG, "Map error for key " << key);
+            valueStr = &nullStr;
+        }
+        return *valueStr;
     }
 
     // Display width
-    const unsigned int Configuration::displayWidth(void)
+    unsigned int Configuration::displayWidth(void) const
     {
-        return m_VM[Configuration::KEY_DISPLAYWIDTH].as<unsigned int>();
+        unsigned int w = m_VM[Configuration::KEY_DISPLAYWIDTH].as<unsigned int>();
+        return w;
     }
 
     // Display height
-    const unsigned int Configuration::displayHeight(void)
+    unsigned int Configuration::displayHeight(void) const
     {
-        return m_VM[Configuration::KEY_DISPLAYHEIGHT].as<unsigned int>();
+        unsigned h = m_VM[Configuration::KEY_DISPLAYHEIGHT].as<unsigned int>();
+        return h;
     }
 
 
@@ -241,8 +255,12 @@ namespace earlyapp
         }
         catch(const boost::program_options::error& e)
         {
-            std::cerr << "ERROR: " << e.what() << std::endl;
-            m_Valid = false;
+            handleProgramOptionException(e);
+            return false;
+        }
+        catch(const boost::bad_lexical_cast& e)
+        {
+            handleProgramOptionException(e);
             return false;
         }
         return true;
@@ -263,6 +281,28 @@ namespace earlyapp
                 std::string("Undefined camera input value: ")
                 .append(optStr));
             throw e;
+        }
+    }
+
+    // Program option parsing exception handler.
+    void Configuration::handleProgramOptionException(const std::exception& e)
+    {
+        const char* errMsg = e.what();
+
+        LERR_(TAG, "Option parse error");
+        std::cerr << "ERROR: ";
+        if(errMsg)
+        {
+            std::cerr << errMsg << std::endl;
+        }
+
+        // Not a valid option.
+        m_Valid = false;
+
+        if(m_pDesc)
+        {
+            delete m_pDesc;
+            m_pDesc = nullptr;
         }
     }
 

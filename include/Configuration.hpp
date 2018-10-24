@@ -124,12 +124,12 @@ namespace earlyapp
         /*
           Returns display width.
          */
-        const unsigned int displayWidth(void);
+        unsigned int displayWidth(void) const;
 
         /*
           Returns display height.
          */
-        const unsigned int displayHeight(void);
+        unsigned int displayHeight(void) const;
 
 
     private:
@@ -164,5 +164,10 @@ namespace earlyapp
           Raises exception for not suppored camera values.
          */
         static void checkCameraParameter(std::string optStr);
+
+        /*
+          Default exception handler for option parsing.
+         */
+        void handleProgramOptionException(const std::exception& e);
     };
 } // namespace

@@ -45,7 +45,11 @@ namespace earlyapp
 
     CBCEventListener::CBCEventListener(CBCEventDevice* pEvDev)
     {
-        setEventDevice(pEvDev);
+        m_pEvDev = nullptr;
+        if(pEvDev != nullptr)
+        {
+            setEventDevice(pEvDev);
+        }
     }
 
     /*
@@ -138,11 +142,22 @@ namespace earlyapp
         {
             std::shared_ptr<CBCEvent> pEv;
 
-            //LINF_(TAG, "Checking CBC event device.");
-            if((pEv = m_pEvDev->readEvent()) != nullptr)
+            // User injected event.
+            if(m_InjEv != CBCEvent::eGEARSTATUS_UNKNOWN)
+            {
+                LINF_(TAG, "User injected siganl: " << m_InjEv);
+                pEv = std::make_shared<CBCEvent>(m_InjEv);
+                notify(pEv);
+                m_InjEv = CBCEvent::eGEARSTATUS_UNKNOWN;
+            }
+            else if((pEv = m_pEvDev->readEvent()) != nullptr)
             {
                 LINF_(TAG, "Notifying CBC event.");
                 notify(pEv);
+            }
+            else
+            {
+                //LINF_(TAG, "NULL for event reading.");
             }
 
             if(keepObserve && loopInterval > 0)
@@ -160,6 +175,22 @@ namespace earlyapp
         {
             (*i)->handleCBCEvent(pEv);
         }
+    }
+
+    /*
+      Inject a CBC event.
+     */
+    void CBCEventListener::injectEvent(CBCEvent::eCBCEvent ev)
+    {
+        // Is the event valid?
+        if(ev == CBCEvent::eGEARSTATUS_UNKNOWN
+           || ev == CBCEvent::eCBCEVENT_MIN
+           || ev == CBCEvent::eCBCEVENT_MAX)
+        {
+            LWRN_(TAG, "Invalid event injection request has been denied.");
+            return;
+        }
+        m_InjEv = ev;
     }
 
 } // namespace

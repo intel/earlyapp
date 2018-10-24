@@ -26,10 +26,24 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 PROJECT("earlyapp")
 SET(PROJECT_VERSION_MAJOR 0)
 SET(PROJECT_VERSION_MINOR 9)
-SET(PROJECT_VERSION_PATCH 0)
+SET(PROJECT_VERSION_PATCH 5)
 
 # Version file.
 CONFIGURE_FILE("version.h.in" ${CMAKE_BINARY_DIR}/include/EAVersion.h)
+
+
+# [Features]
+#  - Log output
+OPTION(USE_LOGOUTPUT "Control detailed log output to standard out" OFF)
+IF(USE_LOGOUTPUT)
+    ADD_DEFINITIONS(-DUSE_LOGOUTPUT)
+ENDIF(USE_LOGOUTPUT)
+
+#  - Log demsg output
+OPTION(USE_DMESGLOG "Log output to dmesg log" OFF)
+IF(USE_DMESGLOG)
+    ADD_DEFINITIONS(-DUSE_DMESGLOG)
+ENDIF(USE_DMESGLOG)
 
 
 # Program executable.

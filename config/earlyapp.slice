@@ -1,0 +1,3 @@
+[Slice]
+StartupCPUWeight=1000
+StartupIOWeight=1000

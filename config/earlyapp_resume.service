@@ -3,7 +3,6 @@ Description=Restart earlyapp after resume from suspend
 After=suspend.target
 
 [Service]
-Type=simple
 ExecStart=/usr/bin/systemctl --no-block restart earlyapp.service
 
 [Install]

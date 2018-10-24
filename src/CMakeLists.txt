@@ -40,7 +40,8 @@ SET(SRC_FILES
     OutputDevice.cpp
     SystemStatusTracker.cpp
     VideoDevice.cpp
-    VirtualCBCEventDevice.cpp)
+    VirtualCBCEventDevice.cpp
+    EALog.cpp)
 
 
 # Header files.
@@ -58,7 +59,7 @@ INCLUDE_DIRECTORIES(
 
 
 # Compile options.
-ADD_COMPILE_OPTIONS(${GST_CFLAGS})
+ADD_COMPILE_OPTIONS(-Wall ${GST_CFLAGS})
 
 
 # Definitions
@@ -81,7 +82,8 @@ ADD_LIBRARY(src OBJECT ${SRC_FILES})
 
 
 # Build target extcutable.
-ADD_EXECUTABLE(${PROGRAM_EXE} ${SRC_FILES} ${EXE_MAIN})
+ADD_EXECUTABLE(${PROGRAM_EXE} ${EXE_MAIN})
+TARGET_LINK_LIBRARIES(${PROGRAM_EXE} src)
 
 
 # Installation.

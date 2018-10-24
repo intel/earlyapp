@@ -23,16 +23,15 @@
 
 #pragma once
 
+#ifdef USE_LOGOUTPUT
 #include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
-
 
 // Informative logs.
 #define LINF_(tag, str) \
     BOOST_LOG_TRIVIAL(info) \
     << "[" << tag << "] " \
     << str
-
 
 // Debug logs.
 #define LDBG_(tag, str) \
@@ -51,3 +50,25 @@
     BOOST_LOG_TRIVIAL(error) \
     << "[" << tag << "] " \
     << str
+
+#else
+// No log output
+#define LINF_(tag, str)
+#define LDBG_(tag, str)
+#define LWRN_(tag, str)
+#define LERR_(tag, str)
+
+#endif // USE_LOGOUTPUT
+
+#ifdef USE_DMESGLOG
+//Init demsg log
+int dmesgLogInit(void);
+
+//Log message to dmesg log
+int dmesgLogPrint(const char*);
+
+//Close demsg log
+int dmesgLogClose(void);
+
+#endif
+

@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <string.h>
 #include <boost/format.hpp>
 
 #include "EALog.h"
@@ -85,7 +86,7 @@ namespace earlyapp
 
         lseek(m_fdCBCDev, 0x00, SEEK_SET);
         unsigned char cbcSignalBuffer[CBCBUFFER_SIZE];
-        size_t r = read(m_fdCBCDev, cbcSignalBuffer, sizeof(cbcSignalBuffer));
+        ssize_t r = read(m_fdCBCDev, cbcSignalBuffer, sizeof(cbcSignalBuffer));
         if( r <= 0)
         {
             // No events.

@@ -1,6 +1,8 @@
 [Unit]
 Description=earlyapp target
-Before=sysinit.target systemd-udev-trigger.service systemd-udevd.service systemd-vconsole-setup.service dev-hugepages.mount sys-kernel-debug.mount var-volatile-lib.service kmod-static-nodes.service systemd-modules-load.service systemd-hwdb-update.service systemd-remount-fs.service systemd-sysusers.service
+Wants=earlyapp.service
+After=earlyapp.service
 
 [Install]
 WantedBy=basic.target
+Also=earlyapp_resume.service

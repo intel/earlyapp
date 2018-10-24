@@ -68,11 +68,11 @@ namespace earlyapp
         /*
           GStreamer elements.
         */
-        GstElement* m_pVideoSrc;
-        GstElement* m_pVideoSink;
-        GstElement* m_pDecodeBin;
-        GstElement* m_pVideoScale;
-        GstElement* m_pScaleFilter;
+        GstElement* m_pVideoSrc = nullptr;
+        GstElement* m_pVideoSink = nullptr;
+        GstElement* m_pDecodeBin = nullptr;
+        GstElement* m_pVideoScale = nullptr;
+        GstElement* m_pScaleFilter = nullptr;
     };
 } // namespace
 

@@ -1,0 +1,9 @@
+[Unit]
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/chown :video /dev/dri/card0
+ExecStart=/usr/bin/chmod g+rw /dev/dri/card0
+Slice=earlyapp.slice

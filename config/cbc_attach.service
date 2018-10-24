@@ -1,13 +1,7 @@
 [Unit]
 Description=cbc attach
 DefaultDependencies=no
-Requires=ias.service
-After=ias.service
 
 [Service]
 ExecStart=/usr/bin/cbc_attach
-Restart=no
-Type=simple
-
-[Install]
-WantedBy=earlyapp.target
+Slice=earlyapp.slice

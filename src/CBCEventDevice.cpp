@@ -40,6 +40,8 @@ namespace earlyapp
 {
     CBCEventDevice::CBCEventDevice(const char* cbcDevice)
     {
+        m_PollFd = {0,};
+
         if(cbcDevice)
         {
             LINF_(TAG, "Opening device " << cbcDevice);
@@ -102,7 +104,13 @@ namespace earlyapp
         // Poll the device node.
         if(poll(&m_PollFd, 1, CBCEVENT_POLL_INTERVAL) < 0)
         {
-            LERR_(TAG, "Failed to read CBC device: " << strerror(errno));
+            LERR_(TAG, "Failed to read CBC device");
+
+            char* errMsg = strerror(errno);
+            if(errMsg)
+            {
+                LERR_(TAG, ": " << errMsg);
+            }
             return nullptr;
         }
 
@@ -110,12 +118,17 @@ namespace earlyapp
         if(m_PollFd.revents & POLLIN)
         {
             unsigned char cbcSignalBuffer[CBCBUFFER_SIZE];
-            size_t readChars;
+            ssize_t readChars;
 
             // Read error.
             if((readChars = read(m_PollFd.fd, &cbcSignalBuffer, CBCBUFFER_SIZE)) < 0)
             {
-                LERR_(TAG, "Failed to read CBC signal buffer: " << strerror(errno));
+                char* errMsg = strerror(errno);
+                LERR_(TAG, "Failed to read CBC signal buffer");
+                if(errMsg)
+                {
+                    LERR_(TAG, ": " << errMsg);
+                }
                 return nullptr;
             }
             // Nothing happend.
@@ -126,6 +139,21 @@ namespace earlyapp
 
             // Allocate a CBCEvent to be sent.
             CBCEvent::eCBCEvent cbcEv = (CBCEvent::eCBCEvent) cbcSignalBuffer[CBC_DATA_INDEX];
+            switch(cbcEv)
+            {
+                 case 1:
+                     cbcEv = CBCEvent::CBCEvent::eGEARSTATUS_REVERSE;
+                     break;
+                 case 3:
+                     cbcEv = CBCEvent::CBCEvent::eGEARSTATUS_FORWARD;
+                     break;
+                 case 5:
+                     cbcEv = CBCEvent::CBCEvent::eAPPLICATION_EXIT;
+                     break;
+                 default:
+                     cbcEv = CBCEvent::CBCEvent::eGEARSTATUS_UNKNOWN;
+                     LWRN_(TAG,"Wrong button, Please input correct button");
+            }
             std::shared_ptr<CBCEvent> e = std::make_shared<CBCEvent>(cbcEv);
 
             LINF_(TAG, "Buffer: " << std::hex << cbcSignalBuffer[0] << cbcSignalBuffer[1] << cbcSignalBuffer[2] << cbcSignalBuffer[3] << cbcSignalBuffer[4] << cbcSignalBuffer[5]);

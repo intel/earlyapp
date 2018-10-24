@@ -222,14 +222,14 @@ namespace earlyapp
         {
             caps = gst_caps_new_simple(
                 "video/x-raw",
-                "height", G_TYPE_INT, displayHeight(),
+                "width", G_TYPE_INT, displayWidth(),
                 nullptr);
         }
         else if(displayHeight() != Configuration::DONT_CARE)
         {
             caps = gst_caps_new_simple(
                 "video/x-raw",
-                "width", G_TYPE_INT, displayWidth(),
+                "height", G_TYPE_INT, displayHeight(),
                 nullptr);
         }
         else
