@@ -6,9 +6,9 @@ Before=ias.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStartPre=/usr/share/earlyapp/fb_splash_gpio.sh 442 1
+ExecStartPre=/usr/share/earlyapp/kpi_gpio.sh 442 1
 ExecStart=/usr/bin/dd if=/usr/share/earlyapp/clear_fb.fb of=/dev/fb0
-ExecStartPost=/usr/share/earlyapp/fb_splash_gpio.sh 442 0
+ExecStartPost=/usr/share/earlyapp/kpi_gpio.sh 442 0
 Restart=no
 Slice=earlyapp.slice
 

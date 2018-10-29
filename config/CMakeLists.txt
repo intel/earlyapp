@@ -34,10 +34,11 @@ SET(CONF_FILES
     earlyapp_resume.service
     fb_splash.service
     glmark2.service
+    glmark2_resume.service
     )
 
 SET(SCRIPT_FILES
-    fb_splash_gpio.sh
+    kpi_gpio.sh
     )
 
 INSTALL(FILES ${CONF_FILES}
