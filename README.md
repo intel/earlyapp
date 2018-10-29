@@ -19,13 +19,14 @@ https://opensource.org/licenses/MIT
 
 ## Program options
  - --help: Show usage.
- - -c [--camera-input] <[ici|v4l2]>: Set camera input source, default is ici.
- - -s [--splash-video] <file path>: Set splash video path.
- - -d [--cbc-device] <device path>: Set CBC device path.
- - --bootup-sound <file path>: Set bootup sound path.
- - --rvc-sound <file path>: Set RVC sound path.
- - -w [--width] <nubmer>: Set display width.
- - -h [--height] <number>: Set display height.
+ - -c [--camera-input] &lt;[ici|v4l2]&gt;: Set camera input source, default is ici.
+ - -s [--splash-video] &lt;file path&gt;: Set splash video path.
+ - -d [--cbc-device] &lt;device path&gt;: Set CBC device path.
+ - --bootup-sound &lt;file path&gt;: Set bootup sound path.
+ - --rvc-sound &lt;file path&gt;: Set RVC sound path.
+ - -w [--width] &lt;nubmer&gt;: Set display width.
+ - -h [--height] &lt;number&gt;: Set display height.
+ - --gpio-number &lt;number&gt;: GPIO number for KPI measurements. Negative values will be ignored.
 
 
 ## Building

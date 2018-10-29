@@ -1,0 +1,16 @@
+[Unit]
+Requires=ias.service
+After=ias.service
+DefaultDependencies=no
+
+[Service]
+Environment=XDG_RUNTIME_DIR=/run/ias/
+ExecStart=/usr/bin/glmark2-es2-wayland --run-forever --fullscreen --annotate
+Slice=earlyapp.slice
+
+# In case weston is still starting up and socket is not available
+ExecStartPre=/usr/bin/test -S $XDG_RUNTIME_DIR/wayland-0
+Restart=on-failure
+
+[Install]
+WantedBy=graphical.target
