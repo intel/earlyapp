@@ -1,7 +1,7 @@
 [Unit]
 Description=GP2.0 Splash Screen
 DefaultDependencies=no
-Before=ias.service
+Before=ias-earlyapp.service
 
 [Service]
 Type=oneshot

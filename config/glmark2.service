@@ -16,3 +16,4 @@ Restart=on-failure
 
 [Install]
 WantedBy=graphical.target
+Also=glmark2_resume.service

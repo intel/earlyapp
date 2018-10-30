@@ -2,15 +2,7 @@
 After=suspend.target
 
 [Service]
-Environment=XDG_RUNTIME_DIR=/run/ias/
-ExecStartPre=/usr/share/earlyapp/kpi_gpio.sh 442 1
-ExecStart=/usr/bin/glmark2-es2-wayland --run-forever --fullscreen --annotate
-Slice=earlyapp.slice
-
-# In case weston is still starting up and socket is not available
-ExecStartPre=/usr/bin/test -S $XDG_RUNTIME_DIR/wayland-0
-ExecStartPost=/usr/share/earlyapp/kpi_gpio.sh 442 0
-Restart=on-failure
+ExecStart=/usr/bin/systemctl --no-block restart glmark2.service
 
 [Install]
 WantedBy=suspend.target

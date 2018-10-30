@@ -24,4 +24,3 @@ Slice=earlyapp.slice
 
 [Install]
 WantedBy=graphical.target
-Alias=ias
