@@ -2,7 +2,7 @@
 After=suspend.target
 
 [Service]
-ExecStart=/usr/bin/systemctl --no-block restart glmark2.service
+ExecStart=/usr/bin/systemctl --no-block restart es2gears.service
 
 [Install]
 WantedBy=suspend.target
