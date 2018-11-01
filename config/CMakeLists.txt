@@ -33,8 +33,8 @@ SET(CONF_FILES
     cbc_attach.service
     earlyapp_resume.service
     fb_splash.service
-    es2gears.service
-    es2gears_resume.service
+    glmark2.service
+    glmark2_resume.service
     )
 
 SET(SCRIPT_FILES

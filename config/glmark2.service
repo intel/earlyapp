@@ -5,7 +5,7 @@ DefaultDependencies=no
 
 [Service]
 Environment=XDG_RUNTIME_DIR=/run/ias/
-ExecStart=/usr/share/ias/examples/weston-es2gears -f
+ExecStart=/usr/bin/glmark2-es2-wayland --run-forever --fullscreen --annotate
 ExecStartPost=/usr/share/earlyapp/kpi_gpio.sh 442 0
 Slice=earlyapp.slice
 
@@ -16,4 +16,4 @@ Restart=on-failure
 
 [Install]
 WantedBy=graphical.target
-Also=es2gears_resume.service
+Also=glmark2_resume.service
