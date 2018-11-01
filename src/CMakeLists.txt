@@ -48,17 +48,24 @@ SET(SRC_FILES
     EALog.cpp)
 
 
-# Header files.
-# GStreamer uses pkg-config.
-find_package(PkgConfig)
-pkg_check_modules(
-    GST
-    REQUIRED
-    gstreamer-1.0>=1.12)
+# External dependencies.
+
+# Boost
+FIND_PACKAGE(Boost REQUIRED
+    COMPONENTS
+    log
+    thread
+    system
+    program_options)
+
+# GStreamer
+FIND_PACKAGE(PkgConfig REQUIRED)
+PKG_CHECK_MODULES(GST REQUIRED gstreamer-1.0)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_BINARY_DIR}/include
     ${PROJECT_SOURCE_DIR}/include
+    ${Boost_INCLUDE_DIRS}
     ${GST_INCLUDE_DIRS})
 
 
@@ -66,19 +73,12 @@ INCLUDE_DIRECTORIES(
 ADD_COMPILE_OPTIONS(-Wall ${GST_CFLAGS})
 
 
-# Definitions
-ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
-
-
 # Libraries
 LINK_LIBRARIES(
-    stdc++
-    pthread
-    boost_log
-    boost_thread
-    boost_system
-    boost_program_options
-    ${GST_LIBRARIES})
+     stdc++
+     pthread
+     ${Boost_LIBRARIES}
+     ${GST_LIBRARIES})
 
 
 #Object libary for unittests.
