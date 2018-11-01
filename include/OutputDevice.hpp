@@ -33,8 +33,8 @@
 
 namespace earlyapp
 {
-    /*
-      A parameter class to setup start/play.
+    /**
+      @brief A parameter class to setup start/play. 
       Make sub-classes when concrete class need device specific parameters.
     */
     class DeviceParameter
@@ -58,60 +58,59 @@ namespace earlyapp
 
 
     /*
-      OutputDevice.
-      Super class for Audio, Video and Camera devices.
+      @brief Super class for Audio, Video and Camera devices 
+      that provides common device control interface.
      */
     class OutputDevice
     {
     public:
-        /*
-          Initialize.
+        /**
+          @brief Initialize the device.
+          @param pConf User set configuration for the application.
          */
         virtual void init(std::shared_ptr<Configuration> pConf);
 
-        /*
-          preparePlay
-          : This will be called before play().
-            Parameters for play will be given by the playParam argument.
+        /**
+          @brief This will be called before play().
+          Parameters for play will be given by the playParam argument.
          */
         virtual void preparePlay(std::shared_ptr<DeviceParameter> playParam=nullptr);
 
 
-        /*
-          play
-          : Plays the device.
+        /**
+          @brief Play the device.
          */
         virtual void play(void);
 
-        /*
-          prepareStop
-          : This will be called before stop().
+        /**
+          @brief This member function will be called before stop().
          */
         virtual void prepareStop(void);
 
-        /*
-          stop
-          : Stops the device.
+        /**
+          @brief Stop the device.
          */
         virtual void stop(void);
 
-        /*
-          Terminate
-          : Deallocate all resources.
+        /**
+          @brief Terminate the device and deallocate all resources.
          */
         virtual void terminate(void);
 
-        /*
-          Destructor.
+        /**
+          @brief Destructor.
          */
         virtual ~OutputDevice(void);
 
-        /*
-          GPIO output for KPI measurements.
+        /**
+          @brief GPIO output for KPI measurements.
          */
         void outputGPIOPattern(void);
 
     private:
+        /**
+          @brief GPIO control, nullptr if user didn't provide GPIO control option.
+        */
         GPIOControl* m_pGPIOCtrl = nullptr;
     };
 } // namespace

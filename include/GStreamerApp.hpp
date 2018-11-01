@@ -32,64 +32,71 @@
 
 namespace earlyapp
 {
+    /**
+       @brief Common interface for GStreamer usage.
+    */
     class GStreamerApp
     {
     public:
-        /*
-          Destructor.
+        /**
+          @brief Destructor.
          */
         ~GStreamerApp(void);
 
         /*
-          Init
-           - gstInitStr: GStreamer initialization string.
-           - createLoop: True to create own loop.
+          @brief Initializer
+          @param gstInitStr GStreamer initialization string.
+          @param createLoop True to create own loop.
+          @return true for successful initialization.
         */
         bool init(const char* gstInitStr, bool createLoop=true);
 
-        /*
-          Init
-           - gstPipeLine: A pointer for a GStreamer pipeline.
-           - createLoop: True to create own loop.
+        /**
+           @brief Initializer.
+           @param gstPipeLine A pointer for a GStreamer pipeline.
+           @param createLoop True to create own loop.
         */
         bool init(GstElement* gstPipeline, bool createLoop=true);
 
-        /*
-          Start play.
+        /**
+          @brief Start play.
          */
         void startPlay(void);
 
-        /*
-          Stop play.
+        /**
+          @brief Stop play.
          */
         void stopPlay(void);
 
-        /*
-          Set display size.
+        /**
+          @brief Set display size.
+          @param width Width of the screen display output.
+          @param height Height of the screen display output.
          */
         void setDisplaySize(unsigned int width, unsigned int height);
 
-        /*
-          Display width
+        /**
+           @brief Returns display width.
          */
         int displayWidth(void);
 
         /*
-          Display height
+          @brief Returns display height
          */
         int displayHeight(void);
 
     protected:
-        /*
-          Create a GStreamer pipeline.
+        /**
+          @brief Create a GStreamer pipeline.
           Concrete classes should implement this member function that returns
           a GStreamer pipeline based on user input.
+          @param pConf User set configurations.
          */
         virtual GstElement* createPipeline(std::shared_ptr<Configuration> pConf) = 0;
 
-        /*
-          Video scale capsfilter.
-          Returns scale caps based on user input.
+        /**
+          @brief Video scale capsfilter.
+          @return Scale caps based on user input.
          */
         GstCaps* scaleCapsfilter(void);
 

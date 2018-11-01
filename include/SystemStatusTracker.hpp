@@ -33,14 +33,15 @@
 
 namespace earlyapp
 {
-    /*
-      SystemStatusTracker
-      : Tracks system status.
+    /**
+       @brief Tracks system status change.
      */
     class SystemStatusTracker: public CBCEventReceiver
     {
     public:
-        // System states
+        /**
+           @brief System states
+        */
         enum eSystemState
         {
             eSTATE_UNKNOWN,
@@ -55,31 +56,57 @@ namespace earlyapp
         };
 
 
-        // Initializer.
+        /**
+          @brief Initializer.
+        */
         void init(void);
 
-        // Handle CBC events.
-        // Returns true if the event handled by the handler.
+        /**
+           @brief Handle CBC events.
+           @return true if the event handled by the handler.
+        */
         bool handleCBCEvent(std::shared_ptr<CBCEvent> pEv);
 
-        // Was there a gear status change?
-        // This will return false when after returns true.
+        /**
+           @brief Was there a gear status change?
+           @return false when after returns true.
+        */
         bool isStatusChanged(void);
 
-        // Application exit requested.
+        /**
+           @brief Application exit requested.
+           @return true if application exit requested.
+        */
         bool isExitRequested(void);
 
-        // Current state
+        /**
+           @brief Returns current state.
+        */
         eSystemState currentState(void);
 
-        // Make a state transition with given signal.
-        // - True: transition made.
-        // - False: not transited.
+        /**
+           @brief Make a state transition with given signal.
+           @param pEv CBC event gotten from the CBC event listener.
+           @return true if transition has made, false otherwise.
+        */
         bool updateState(std::shared_ptr<CBCEvent> pEv);
+
+        /**
+           @brief Make a state transition with given signal.
+           @param e CBC event enum value gotten from the CBC event listener.
+           @return true if transition has made, false otherwise.
+        */
         bool updateState(CBCEvent::eCBCEvent e);
 
-        // State to relevant string.
+        /**
+           @brief Return string of the current state.
+        */
         std::string stateToString(void);
+
+        /**
+           @brief Return string of given state.
+           @param st State enum value.
+        */
         static std::string stateToString(eSystemState st);
 
 

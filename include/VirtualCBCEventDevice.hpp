@@ -31,20 +31,27 @@
 
 namespace earlyapp
 {
-    /*
-      A virtual CBC Event device for debugging.
+    /**
+      @brief A virtual CBC Event device that can be used when no CAN BOX physical device available.
      */
     class VirtualCBCEventDevice: public CBCEventDevice
     {
     public:
-        // Constructor.
-        // - cbcDevice: Path for CBC device node.
+        /**
+           @brief Constructor.
+           @param cbcDevice Path for CBC device node.
+        */
         VirtualCBCEventDevice(const char* cbcDevice=nullptr);
 
-        // Destructor.
+        /**
+           @brief Destructor.
+        */
         virtual ~VirtualCBCEventDevice(void);
 
-        // Read CBC event.
+        /**
+           @brief Read CBC events from the file.
+           @return CBC events to the virtual device file.
+        */
         std::shared_ptr<CBCEvent> readEvent(void);
 
     private:

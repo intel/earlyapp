@@ -32,15 +32,14 @@
 
 namespace earlyapp
 {
-    /*
-      GPIO control.
-      Controls given GPIO number with user set values.
+    /**
+       @brief Controls given GPIO number with user set values.
      */
     class GPIOControl
     {
     public:
-        /*
-          GPIO High / Low.
+        /**
+          @brief GPIO High / Low.
          */
         enum eGPIOValue
         {
@@ -48,59 +47,63 @@ namespace earlyapp
             HIGH = 1
         };
 
-        /*
-          Constructor.
+        /**
+          @brief Constructor.
+          @param gpioNumber GPIO number to control.
+          @param sleepTime Sleep time after the first High/Low control to next.
         */
         GPIOControl(
-            // GPIO number to be controlled.
             int gpioNumber = Configuration::NOT_SET,
-            // Sleep value.
             useconds_t sleepTime = 1000);
 
-        /*
-          Ouput GPIO with given value.
-          Returns true for success, false otherwise.
+        /**
+           @brief Ouput GPIO with given value.
+           @param hightLow Set the GPIO with HIGH or LOW.
+           @return true for success, false otherwise.
          */
         bool output(eGPIOValue highLow);
 
-        /*
-          Sleep for preset time.
+        /**
+           @brief Sleep for preset time.
          */
         void sleep(void);
 
-        /*
-          GPIO export path.
+        /**
+          @brief GPIO export path.
+          @return Corresponding GPIO export path.
          */
         std::shared_ptr<std::string> exportPath(void) const;
 
         /*
-          GPIO direction path.
+          @brief GPIO direction path.
+          @return Corresponding GPIO direction path.
         */
         std::shared_ptr<std::string> directionPath(void) const;
 
-        /*
-          GPIO value path.
+        /**
+          @brief GPIO value path.
+          @return Corresponding PIO value path.
          */
         std::shared_ptr<std::string> valuePath(void) const;
 
     private:
-        /*
-          Is the user setting valid?
+        /**
+          @brief Is the user setting valid?
          */
         bool m_Valid = false;
 
-        /*
-          GPIO number to control.
+        /**
+           @brief GPIO number to control.
          */
         int m_GPIONumber = -1;
 
-        /*
-          User given sleep time.
+        /**
+          @brief User given sleep time.
          */
         useconds_t m_SleepTime = 0;
 
-        /*
-          Hide default constructor.
+        /**
+          @brief Hidden default constructor.
         */
         GPIOControl(void) { };
     };

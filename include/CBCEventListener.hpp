@@ -34,35 +34,59 @@
 
 namespace earlyapp
 {
-    /*
-      CBCEventListener
-      : Observes CBC event device and notify to subscribers when any event happened.
+    /**
+       @brief Observes CBC event device and notify to subscribers when any event happened.
      */
     class CBCEventListener
     {
     public:
-        // Constructor/destructor.
+        /**
+           @brief Constructor.
+        */
         CBCEventListener(void);
+
+        /**
+           @brief Constructor.
+           @param pEvDev Event device to listen.
+        */
         CBCEventListener(CBCEventDevice* pEvDev);
+
+        /**
+           @brief Destructor.
+        */
         ~CBCEventListener(void);
 
-        // Set event device.
+        /**
+           @brief Set or change event device to listen.
+           @param pEvDev Event device to listen.
+        */
         CBCEventDevice* setEventDevice(CBCEventDevice* pEvDev);
 
-        // Add CBC event receiver.
+        /**
+           @brief Add CBC event receiver.
+           @return true when succeed to register, false otherwise.
+        */
         bool addSubscriber(CBCEventReceiver* pSub);
 
-        // Remove CBC event receiver.
+        /**
+           @brief Remove CBC event receiver.
+           @return true when succeed to remove, false otherwise.
+        */
         bool rmSubscriber(CBCEventReceiver* pSub);
 
-        // Observe CBC events and update subscribers.
-        //  - keepObserve: Keep observes the device in loop.
-        //  - loopInterval: Sleep interval for event observing.
+        /**
+           @brief Observe CBC events and update subscribers.
+           @param keepObserve Keep observes the device in loop.
+           @param loopInterval Sleep interval for event observing.
+        */
         void observeAndNotify(bool keepObserve=true, long loopInterval=0);
 
-        // Inject a CBC event.
-        // This function doesn't keep previously injected.
-        // Any events not processed will be lost.
+        /**
+           @brief Inject a CBC event.
+           This function doesn't keep previously injected.
+           Any events not processed will be lost.
+           @param ev A CBC event enum value to inject to the listener.
+        */
         void injectEvent(CBCEvent::eCBCEvent ev);
 
 

@@ -32,13 +32,22 @@
 
 namespace earlyapp
 {
+    /**
+       @brief Base class for all CBC event receivers.
+     */
     class CBCEventReceiver
     {
     public:
+        /**
+           @brief Constructor.
+        */
         CBCEventReceiver(void);
 
-        // Handle delivered CBCEvent.
-        //  Return false when the event is not been proceeded.
+        /**
+           @brief Handle delivered CBCEvent.
+           @param pEv CBC event from the CBC event listener.
+           @return false when the event is not been proceeded.
+        */
         virtual bool handleCBCEvent(std::shared_ptr<CBCEvent> pEv) = 0;
     };
 } // namespace

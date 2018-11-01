@@ -32,6 +32,9 @@
 
 namespace earlyapp
 {
+    /**
+       @brief Configuration for the application that set from on user given parameters.
+    */
     class Configuration
     {
     public:
@@ -70,114 +73,113 @@ namespace earlyapp
         static const char* KEY_GPIONUMBER;
 
 
-        /*
-          Destructor.
+        /**
+          @brief Destructor.
          */
         ~Configuration(void);
 
         /*
-          Creates and return a Configuration class object with
-          given parameters.
+          @brief Creates and return a Configuration class object with given parameters.
         */
         static std::shared_ptr<Configuration> makeConfiguration(int argc, char** argv);
 
-        /*
-          Is configuration data valid?
-          True - Configuration is parsed and ready.
+        /**
+           @brief Is configuration data valid?
+           @return true if Configuration is parsed and ready.
          */
         bool isValid(void);
 
-        /*
-          Print usage.
+        /**
+          @brief Print usage.
          */
         void printUsage(void);
 
-        /*
-          Print version number.
+        /**
+          @brief Print version number.
          */
         void printVersion(char* programName);
 
-        /*
-          Returns audio splash sound path.
+        /**
+          @brief Returns audio splash sound path.
         */
         const std::string& audioSplashSoundPath(void);
 
-        /*
-          Returns audio RVC sound path.
+        /**
+          @brief Returns audio RVC sound path.
         */
         const std::string& audioRVCSoundPath(void);
 
-        /*
-          Returns camera input source.
+        /**
+          @brief Returns camera input source.
          */
         const std::string& cameraInputSource(void);
 
-        /*
-          Returns splash video path.
+        /**
+          @brief Returns splash video path.
          */
         const std::string& videoSplashPath(void);
 
-        /*
-          Returns CBC device path.
+        /**
+          @brief Returns CBC device path.
          */
         const std::string& cbcDevicePath(void);
 
-        /*
-          Returns test cbc device if given by user otherwise nullptr.
+        /**
+          @brief Returns test cbc device if given by user otherwise nullptr.
          */
         const std::string& testCBCDevicePath(void);
 
-        /*
-          Returns display width.
+        /**
+          @brief Returns display width.
          */
         unsigned int displayWidth(void) const;
 
-        /*
-          Returns display height.
+        /**
+          @brief Returns display height.
          */
         unsigned int displayHeight(void) const;
 
-        /*
-          Returns user set output GPIO.
+        /**
+          @brief Returns user set output GPIO.
          */
         int gpioNumber(void) const;
 
 
     private:
-        /*
-          Options description.
+        /**
+          @brief Options description.
          */
         boost::program_options::options_description* m_pDesc = nullptr;
 
-        /*
-          Option variables map.
+        /**
+          @brief Option variables map.
          */
         boost::program_options::variables_map m_VM;
 
-        /*
-          Is configuration valid.
+        /**
+          @brief Is configuration valid.
          */
         bool m_Valid = false;
 
-        /*
-          Initialize and return program options.
-          True when succeed.
+        /**
+          @brief Initialize and return program options.
+          @return True when succeed.
         */
         bool initProgramOptions(int argc, char** argv);
 
-        /*
-          Returns mapped value from the variables_map m_VM.
+        /**
+          @brief Returns mapped value from the variables_map m_VM.
          */
         const std::string& stringMappedValueOf(const char* key);
 
-        /*
-          Camera option checker.
+        /**
+          @brief Camera option checker.
           Raises exception for not suppored camera values.
          */
         static void checkCameraParameter(std::string optStr);
 
-        /*
-          Default exception handler for option parsing.
+        /**
+           @brief Default exception handler for option parsing.
          */
         void handleProgramOptionException(const std::exception& e);
     };

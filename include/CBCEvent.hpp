@@ -31,60 +31,83 @@
 
 namespace earlyapp
 {
-    /*
-      CBC Event.
+    /**
+      @brief A class abstracting CBC Events.
      */
     class CBCEvent
     {
     public:
-        /*
-          CBC event enum values.
+        /**
+           @brief CBC event enum values.
           CBCEvent::toString() should be updated when new event added.
          */
         enum eCBCEvent
         {
-            // Gear status not updated yet.
+            /** @brief Gear status not updated yet. */
             eGEARSTATUS_UNKNOWN,
         
-            // Gear status chagned to reverse.
+            /** @brief Gear status chagned to reverse. */
             eGEARSTATUS_REVERSE,
 
-            // Gear status changed to forward.
+            /** @brief Gear status changed to forward. */
             eGEARSTATUS_FORWARD,
 
-            // Application exit.
+            /** @brief Application exit. */
             eAPPLICATION_EXIT,
 
-            // MIN index
+            /** @brief MIN index. */
             eCBCEVENT_MIN = eGEARSTATUS_UNKNOWN,
 
-            // MAX index
+            /** @brief MAX index. */
             eCBCEVENT_MAX = eAPPLICATION_EXIT,
         };
 
-        // Constructor.
+        /**
+           @brief Constructor.
+           @param ev CBC event enum value.
+        */
         CBCEvent(eCBCEvent ev);
 
-        // Destrocutor.
+        /**
+           @brief Destrocutor.
+        */
         virtual ~CBCEvent(void);
         
-        // Event enum value.
+        /**
+           @brief Event enum value.
+        */
         eCBCEvent toEnum(void);
 
-        // Returns current status's relaevant string.
+        /**
+           @brief Returns current status's relaevant string.
+           @return Relevant string for the enum CBC events.
+        */
         std::string toString(void) const;
 
-        // Returs CBCEvent string.
+        /** 
+            @brief A static member function that returns corresponding string for given CBC events.
+            @param ev CBC event enum.
+            @return A corresponding string for the enum value.
+        */
         static std::string toString(eCBCEvent ev);
 
-        // Is the CBCEvent is valid?
+        /**
+           @brief A checker whether this CBC event object is valid or not.
+           @return true if the object is a valid CBC event, false otherwise.
+        */
         bool isValid(void);
 
-        // Is given CBCEvent is valid?
+        /**
+           @brief A static member function returns whether given CBC event enum is valid or not.
+           @return true if given enum is valid CBC event, false otherwise.
+        */
         static bool isValid(eCBCEvent ev);
 
 
     private:
+        /**
+           @brief A member funciton that hold CBC enum data.
+         */
         eCBCEvent m_cbcEnumValue = eGEARSTATUS_UNKNOWN;
     };
 } // namespace

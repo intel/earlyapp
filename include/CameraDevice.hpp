@@ -32,39 +32,64 @@
 
 namespace earlyapp
 {
-    /*
-      CameraDevice
-      : A class abstracts camera device.
+    /**
+      @brief A class abstracts camera device.
      */
     class CameraDevice: public OutputDevice, GStreamerApp
     {
     public:
+        /**
+           @brief Returns instance of CameraDevice object.
+        */
         static CameraDevice* getInstance(void);
 
+        /**
+           @brief Initialize camera device.
+           @pConf User set configuration parameters.
+        */
         void init(std::shared_ptr<Configuration> pConf);
 
+        /**
+           @brief Play the camera device.
+        */
         void play(void);
 
+        /**
+           @brief Stop the camera device.
+        */
         void stop(void);
 
+        /**
+           @brief Terminate all resources.
+        */
         void terminate(void);
 
+        /**
+           @brief Destructor.
+        */
         virtual ~CameraDevice(void);
 
     protected:
-        /*
-          Create a camera pipeline.
+        /**
+          @brief Create a GStreamer camera pipeline.
+          @pConf User set configuration parameter.
          */
         virtual GstElement* createPipeline(std::shared_ptr<Configuration> pConf);
 
     private:
-        // Hide the default constructor to prevent instancitating.
+        /**
+           @brief Default constructor hidden in preivate to prevent instancitation.
+        */
         CameraDevice(void) { }
 
-        // User set configurations.
+        /**
+           @brief Camear device instance.
+        */
         static CameraDevice* m_pCDev;
 
-        // user configuration.
+        /**
+           @brief User configuration.
+        */
         std::shared_ptr<Configuration> m_pConf;
 
         /*

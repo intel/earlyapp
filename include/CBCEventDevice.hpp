@@ -43,31 +43,50 @@
 
 namespace earlyapp
 {
-    /*
-      CBC Event device.
+    /**
+      @brief Abstracts CBC Event device.
      */
     class CBCEventDevice
     {
     public:
-        // Constructor.
-        // - cbcDevice: Path for CBC device node.
+        /**
+           @brief Constructor.
+           @param cbcDevice Path for CBC device node.
+        */
         CBCEventDevice(const char* cbcDevice=nullptr);
 
-        // Destructor.
+        /**
+           @brief Destructor.
+        */
         virtual ~CBCEventDevice(void);
 
-        // Is CBC event device open successfuly?
+        /**
+           @brief Is CBC event device open successfuly?
+           @return true if the device successfully, false otherwise.
+        */
         bool openSuccessfully(void);
 
-        // Read CBC event.
+        /**
+           @brief Read CBC event from the device (file).
+           @return Returns received CBC event.
+        */
         virtual std::shared_ptr<CBCEvent> readEvent(void);
 
     protected:
+        /**
+           @brief File descriptor for the CBC device file.
+         */
         int m_fdCBCDev = -1;
+
+        /**
+           @brief Device open success flag.
+        */
         bool m_bOpenSuccess = false;
 
     private:
-        // Poll FD.
+        /**
+           @brief Poll FD.
+        */
         struct pollfd m_PollFd;
     };
 } // namespace

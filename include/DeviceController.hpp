@@ -39,48 +39,91 @@
 
 namespace earlyapp
 {
+    /**
+       @brief Controls output device for current state.
+    */
     class DeviceController
     {
     public:
-        // Constructor.
+        /**
+           @brief Constructor.
+           @param pConf User set configuration.
+           @param pSST System status tracker.
+        */
         DeviceController(std::shared_ptr<Configuration> pConf, SystemStatusTracker* pSST);
 
-        // Initialize.
+        /**
+           @brief Initializes the object.
+           @param pAud Audio device instance.
+           @param pVid Video device instance.
+           @param pCam Camera device instance.
+        */
         void init(
-            AudioDevice* pAud=nullptr,   // Audio device.
-            VideoDevice* pVid=nullptr,   // Video device.
-            CameraDevice* pCam=nullptr); // Camera device.
+            AudioDevice* pAud=nullptr,
+            VideoDevice* pVid=nullptr,
+            CameraDevice* pCam=nullptr);
 
-        // Control devices.
+        /**
+           @brief Control devices.
+           @return false for any errors, true otherwise.
+        */
         bool controlDevices(void);
 
-        // Stop all devices.
+        /**
+           @brief Stop all devices.
+        */
         void stopAllDevices(void);
 
-        // Terminate all devices.
+        /**
+           @brief Terminate all devices.
+        */
         void terminateAllDevices(void);
 
-        // Has the controller initialized?
+        /**
+           @brief Has the controller initialized?
+           @return true if initialized, false otherwise.
+        */
         bool isInitialized(void);
 
-        // Number of registered devices.
+        /**
+           @brief Number of registered devices.
+        */
         int numDevices(void);
 
     private:
-        // Initialized
+        /**
+           @brief A flag for initialization.
+        */
         bool m_bInit = false;
 
-        // Pointer to the SystemStatusTracker.
+        /**
+           @brief Pointer to the SystemStatusTracker.
+        */
         SystemStatusTracker* m_pSST;
 
-        // Output devices.
+        /**
+           @brief Container for all controlling  Output devices.
+        */
         std::set<OutputDevice*> m_devs;
 
-        // Configuration.
+        /**
+           @brief Configuration.
+        */
         std::shared_ptr<Configuration> m_pConf;
 
+        /**
+           @brief Audio device instance.
+         */
         AudioDevice* m_pAud = nullptr;
+
+        /**
+           @brief Video device instance.
+        */
         VideoDevice* m_pVid = nullptr;
+
+        /**
+           @brief Camera device instance.
+        */
         CameraDevice* m_pCam = nullptr;
     };
 } // namespace

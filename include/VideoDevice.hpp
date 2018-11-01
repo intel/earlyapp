@@ -33,28 +33,47 @@
 
 namespace earlyapp
 {
-    /*
-      VideoDevice
-      : A class abstracts video playback device without audio.
+    /**
+      @brief A class abstracts video playback device without audio.
      */
     class VideoDevice: public OutputDevice, GStreamerApp
     {
     public:
+        /**
+           @brief Returns video device instance.
+        */
         static VideoDevice* getInstance(void);
 
+        /**
+           @brief Initializes video device.
+           @param pConf Uset set configurations.
+        */
         void init(std::shared_ptr<Configuration> pConf);
 
+        /**
+           @brief Playback the video device.
+        */
         void play(void);
 
+        /**
+           @brief Stop playback.
+        */
         void stop(void);
 
+        /**
+           @brief Terminate the device an deallocate resources.
+        */
         void terminate(void);
 
+        /**
+           @brief Destructor.
+        */
         virtual ~VideoDevice(void);
 
     protected:
-        /*
-          Create an video pipeline.
+        /**
+          @brief Create an video pipeline.
+          @param pConf User set configurations.
          */
         virtual GstElement* createPipeline(std::shared_ptr<Configuration> pConf);
 

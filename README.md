@@ -50,13 +50,23 @@ https://opensource.org/licenses/MIT
 ## Compilation options
  - USE_LOGOUTPUT
  : Enable detailed log output to standard out.
-```shell
-$ cmake -DUSE_LOGOUTPUT=ON .
-```
+ 
+  ```shell
+  $ cmake -DUSE_LOGOUTPUT=ON .
+  ```
 
  - USE_DMESGLOG
  : Enable log output to dmesg.
-```shell
-$ cmake -DUSE_DMESGLOG=ON .
-```
+ 
+  ```shell
+  $ cmake -DUSE_DMESGLOG=ON .
+  ```
+
+
+## Document update
+Use following doxygen command to make update documents under doc/html.
+
+  ```shell
+  $ doxygen doc/doxyconf
+  ```
 

@@ -35,30 +35,53 @@
 
 namespace earlyapp
 {
-    /*
-      AudioDevice
-      : A class abstracts audio playback device.
+    /**
+      @brief A class abstracts audio playback device.
      */
     class AudioDevice: public OutputDevice, public GStreamerApp
     {
     public:
+        /**
+           @brief Returns audio device singlton instance.
+         */
         static AudioDevice* getInstance(void);
 
+        /**
+           @brief Initializes the audio device.
+           @param pConf User set configurations.
+         */
         void init(std::shared_ptr<Configuration> pConf);
 
+        /**
+           @brief Prepare for playback audio file.
+           @param playParam Parameters for audio playback including file path.
+        */
         void preparePlay(std::shared_ptr<DeviceParameter> playParam=nullptr);
 
+        /**
+           @brief Play the audio device.
+         */
         void play(void);
 
+        /**
+           @brief Stop the audio device.
+        */
         void stop(void);
 
+        /**
+           @brief Terminate the device and eturn all resources.
+        */
         void terminate(void);
 
+        /**
+           @brief Destructor.
+        */
         virtual ~AudioDevice(void);
 
     protected:
-        /*
-          Create an audio pipeline.
+        /**
+          @brief Create an audio GStreamer pipeline.
+          @param pConf User set configurations.
          */
         virtual GstElement* createPipeline(std::shared_ptr<Configuration> pConf);
 
@@ -80,8 +103,8 @@ namespace earlyapp
         GstElement* m_pAudioCnv = nullptr;
         GstElement* m_pAudioPipeline = nullptr;
 
-        /*
-          Releases audio resources except pipeline.
+        /**
+          @brief Releases audio resources except pipeline.
          */
         void releaseAudioResource(void);
     };
