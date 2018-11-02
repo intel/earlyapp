@@ -1,7 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classearlyapp_1_1_g_streamer_app.html" title="Common interface for GStreamer usage. " alt="" coords="5,31,171,57"/>
-<area shape="rect" id="node2" href="$classearlyapp_1_1_audio_device.html" title="A class abstracts audio playback device. " alt="" coords="225,5,379,32"/>
-<area shape="rect" id="node3" href="$classearlyapp_1_1_camera_device.html" title="A class abstracts camera device. " alt="" coords="219,56,385,83"/>
-<area shape="rect" id="node4" href="$classearlyapp_1_1_video_device.html" title="A class abstracts video playback device without audio. " alt="" coords="225,107,379,133"/>
-<area shape="rect" id="node5" href="$classearlyapp_1_1_output_device.html" title="earlyapp::OutputDevice" alt="" coords="9,81,167,108"/>
-</map>

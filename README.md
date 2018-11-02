@@ -36,7 +36,8 @@ https://opensource.org/licenses/MIT
 2. Build:
 
   ```shell
-  $ cmake .
+  $ mkdir build&&cd build
+  $ cmake ..
   $ make
   ```
 
@@ -47,26 +48,18 @@ https://opensource.org/licenses/MIT
   ```
 
 
-## Compilation options
+### Compilation options
  - USE_LOGOUTPUT
  : Enable detailed log output to standard out.
  
   ```shell
-  $ cmake -DUSE_LOGOUTPUT=ON .
+  $ cmake -DUSE_LOGOUTPUT=ON ..
   ```
 
  - USE_DMESGLOG
  : Enable log output to dmesg.
  
   ```shell
-  $ cmake -DUSE_DMESGLOG=ON .
-  ```
-
-
-## Document update
-Use following doxygen command to make update documents under doc/html.
-
-  ```shell
-  $ doxygen doc/doxyconf
+  $ cmake -DUSE_DMESGLOG=ON ..
   ```
 
