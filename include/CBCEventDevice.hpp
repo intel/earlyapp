@@ -56,6 +56,11 @@ namespace earlyapp
         CBCEventDevice(const char* cbcDevice=nullptr);
 
         /**
+           @breif Disable copy constructor.
+        */
+        CBCEventDevice(const CBCEventDevice&) = delete;
+
+        /**
            @brief Destructor.
         */
         virtual ~CBCEventDevice(void);
@@ -71,6 +76,11 @@ namespace earlyapp
            @return Returns received CBC event.
         */
         virtual std::shared_ptr<CBCEvent> readEvent(void);
+
+        /**
+           @brief Assign operators.
+         */
+        CBCEventDevice& operator=(const CBCEventDevice&) = delete;
 
     protected:
         /**

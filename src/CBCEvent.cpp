@@ -74,14 +74,14 @@ namespace earlyapp
     {
         const std::vector<const char*> strT =
         {
-            "UNKNWON",
+            "UNKNOWN",
             "REVERSE GEAR",
             "FORWARD GEAR",
             "APP EXIT",
             "UNDEFINED"
         };
 
-        int idx = (int)ev;
+        int idx = static_cast<int>(ev);
 
         if(! isValid(ev))
         {

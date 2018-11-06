@@ -72,6 +72,10 @@ namespace earlyapp
         static const char* KEY_DISPLAYHEIGHT;
         static const char* KEY_GPIONUMBER;
 
+        /**
+           @brief Constructor.
+        */
+        Configuration(void) = default;
 
         /**
           @brief Destructor.
@@ -143,6 +147,12 @@ namespace earlyapp
           @brief Returns user set output GPIO.
          */
         int gpioNumber(void) const;
+
+        /**
+           @brief Disable copy assigned operators.
+        */
+        Configuration& operator=(const Configuration&) = delete;
+        Configuration(const Configuration&) = delete;
 
 
     private:

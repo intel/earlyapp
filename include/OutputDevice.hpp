@@ -107,6 +107,13 @@ namespace earlyapp
          */
         void outputGPIOPattern(void);
 
+        /**
+           @brief Disable copy assigned operators.
+        */
+        OutputDevice& operator=(const OutputDevice&) = delete;
+        OutputDevice(const OutputDevice&) = delete;
+        OutputDevice(void) = default;
+
     private:
         /**
           @brief GPIO control, nullptr if user didn't provide GPIO control option.

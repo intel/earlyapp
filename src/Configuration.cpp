@@ -74,10 +74,14 @@ namespace earlyapp
     {
         std::shared_ptr<Configuration> conf = std::make_shared<Configuration>();
 
-        // Initialize program options.
-        conf->initProgramOptions(argc, argv);
+        if(conf != nullptr && conf.get() != nullptr)
+        {
+            // Initialize program options.
+            conf->initProgramOptions(argc, argv);
 
-        return std::move(conf);
+            return conf;
+        }
+        return nullptr;
     }
 
     // Is valid.
@@ -143,7 +147,7 @@ namespace earlyapp
 
     const std::string& Configuration::stringMappedValueOf(const char* key)
     {
-        const std::string nullStr = std::string("null");
+        static const std::string nullStr = std::string("null");
         const std::string* valueStr;
 
         try
@@ -179,7 +183,7 @@ namespace earlyapp
         return gpio;
     }
 
-
+    // Destructor.
     Configuration::~Configuration(void)
     {
         if(m_pDesc != nullptr)

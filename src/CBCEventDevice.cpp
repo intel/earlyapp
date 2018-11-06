@@ -141,20 +141,21 @@ namespace earlyapp
             }
 
             // Allocate a CBCEvent to be sent.
-            CBCEvent::eCBCEvent cbcEv = (CBCEvent::eCBCEvent) cbcSignalBuffer[CBC_DATA_INDEX];
-            switch(cbcEv)
+            CBCEvent::eCBCEvent cbcEv = CBCEvent::eGEARSTATUS_UNKNOWN;
+            unsigned char cbcDataPayload = cbcSignalBuffer[CBC_DATA_INDEX];
+            switch(cbcDataPayload)
             {
-                 case 1:
-                     cbcEv = CBCEvent::CBCEvent::eGEARSTATUS_REVERSE;
+                 case 0x01:
+                     cbcEv = CBCEvent::eGEARSTATUS_REVERSE;
                      break;
-                 case 3:
-                     cbcEv = CBCEvent::CBCEvent::eGEARSTATUS_FORWARD;
+                 case 0x03:
+                     cbcEv = CBCEvent::eGEARSTATUS_FORWARD;
                      break;
-                 case 5:
-                     cbcEv = CBCEvent::CBCEvent::eAPPLICATION_EXIT;
+                 case 0x05:
+                     cbcEv = CBCEvent::eAPPLICATION_EXIT;
                      break;
                  default:
-                     cbcEv = CBCEvent::CBCEvent::eGEARSTATUS_UNKNOWN;
+                     cbcEv = CBCEvent::eGEARSTATUS_UNKNOWN;
                      LWRN_(TAG,"Wrong button, Please input correct button");
             }
             std::shared_ptr<CBCEvent> e = std::make_shared<CBCEvent>(cbcEv);

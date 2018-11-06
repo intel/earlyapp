@@ -290,7 +290,7 @@ namespace earlyapp
             "UNDEFINED"
         };
 
-        int idx = (int) st;
+        int idx = static_cast<int>(st);
         if(st < eSTATE_MIN || st > eSTATE_MAX)
         {
             idx = (int)strT.size() - 1;

@@ -69,7 +69,7 @@ namespace earlyapp
         size_t gpioStrLen = strlen(cstrGPIO);
 
         // Value path.
-        int valueFd = open(valuePath()->c_str(), O_WRONLY);
+        int valueFd = open(valuePath()->c_str(), O_WRONLY|O_EXCL);
         if(valueFd < 0)
         {
             // Set export / direction path when failed to open the valuePath().
@@ -84,8 +84,8 @@ namespace earlyapp
 
             // set the direction.
             int dirFd = open(directionPath()->c_str(), O_WRONLY);
-            if (dirFd < 0) {
-                close(exportFd);
+            if (dirFd < 0)
+            {
                 LERR_(TAG, "Failed to open direction:" << directionPath());
                 return false;
             }
