@@ -30,7 +30,7 @@ SET(CONF_FILES
     earlyapp.slice
     ias-earlyapp.service
     ias-pre.service
-    cbc_attach.service
+    cbc_attach-earlyapp.service
     earlyapp_resume.service
     fb_splash.service
     glmark2.service
