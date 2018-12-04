@@ -42,12 +42,19 @@
 #include "DeviceController.hpp"
 #include "Configuration.hpp"
 
+#ifdef USE_GSTREAMER
+#include "GStreamerApp.hpp"
+#endif
+
 // A log tag for main.
 #define TAG "MAIN"
 
-// TODO: REMOVE ME - DEBUG FEATURE.
-#define DEBUG_EVENT_LOOP_INTERVAL 200
-#define DEBUG_DEVICE_LOOP_INTERVAL 80
+
+// Event device reading interval.
+#define EARLYAPP_EVENT_LOOP_INTERVAL 30
+
+// Device control interval.
+#define EARLYAPP_DEVICE_LOOP_INTERVAL 20
 
 
 // Handles program launching error.
@@ -88,10 +95,13 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+
+#ifdef USE_GSTREAMER
     /*
       GStreamer.
      */
     gst_init(&argc, &argv);
+#endif
 
     /*
       Event threading.
@@ -174,7 +184,7 @@ int main(int argc, char* argv[])
             boost::bind(
                 &earlyapp::CBCEventListener::observeAndNotify,
                 &evListener,
-                true, DEBUG_EVENT_LOOP_INTERVAL));
+                true, EARLYAPP_EVENT_LOOP_INTERVAL));
     }
     catch(const boost::thread_resource_error& e)
     {
@@ -193,7 +203,7 @@ int main(int argc, char* argv[])
     {
         //LINF_(TAG, "In main thread");
         boost::this_thread::sleep(
-            boost::posix_time::milliseconds(DEBUG_DEVICE_LOOP_INTERVAL));
+            boost::posix_time::milliseconds(EARLYAPP_DEVICE_LOOP_INTERVAL));
 
         // Was there a status change?
         if(ssTracker.isStatusChanged())

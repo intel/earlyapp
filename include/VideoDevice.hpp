@@ -27,16 +27,15 @@
 #pragma once
 
 #include "OutputDevice.hpp"
-#include "GStreamerApp.hpp"
 #include "Configuration.hpp"
-
+#include "pipeline_decode.h"
 
 namespace earlyapp
 {
     /**
       @brief A class abstracts video playback device without audio.
      */
-    class VideoDevice: public OutputDevice, GStreamerApp
+    class VideoDevice: public OutputDevice
     {
     public:
         /**
@@ -70,13 +69,6 @@ namespace earlyapp
         */
         virtual ~VideoDevice(void);
 
-    protected:
-        /**
-          @brief Create an video pipeline.
-          @param pConf User set configurations.
-         */
-        virtual GstElement* createPipeline(std::shared_ptr<Configuration> pConf);
-
     private:
         // Hide the default constructor to prevent instancitating.
         VideoDevice(void) { }
@@ -84,17 +76,15 @@ namespace earlyapp
         // Pointer for a video playback device instance.
         static VideoDevice* m_pVDev;
 
-        // Handle dynamic pad.
-        static void handleNewPad(GstElement* decodeBin, GstPad* pPad, gpointer data);
+        /**
+           Media SDK Decoding pipeline
+         */
+        CDecodingPipeline* m_pDecPipeline = nullptr;
 
-        /*
-          GStreamer elements.
-        */
-        GstElement* m_pVideoSrc = nullptr;
-        GstElement* m_pVideoSink = nullptr;
-        GstElement* m_pDecodeBin = nullptr;
-        GstElement* m_pVideoScale = nullptr;
-        GstElement* m_pScaleFilter = nullptr;
+        /**
+           Decoding input parameters.
+         */
+        sInputParams m_Params;
     };
 } // namespace
 

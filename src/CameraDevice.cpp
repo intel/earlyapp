@@ -1,3 +1,4 @@
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2018 Intel Corporation
@@ -35,7 +36,6 @@
 // A log tag for Camera device
 #define TAG "CAMERA"
 
-
 namespace earlyapp
 {
     /*
@@ -68,114 +68,6 @@ namespace earlyapp
         return m_pCDev;
     }
 
-    /*
-      Create a GStreamer pipeline.
-     */
-    GstElement* CameraDevice::createPipeline(std::shared_ptr<Configuration> pConf)
-    {
-        // Camera pipeline.
-        GstElement* camPipeline = gst_pipeline_new(nullptr);
-        GstElement* camSrcCapsFilter = nullptr;
-        /*
-          Camera input source. - ICI, V4L2, Test source.
-         */
-        std::string camSrc = pConf->cameraInputSource();
-        if(camSrc.compare("ici") == 0)
-        {
-            m_pCamSrc = gst_element_factory_make("icamerasrc", nullptr);
-            g_object_set(G_OBJECT(m_pCamSrc), "device-name", 1, nullptr);
-            g_object_set(G_OBJECT(m_pCamSrc), "interlace-mode", 7, nullptr);
-            g_object_set(G_OBJECT(m_pCamSrc), "deinterlace-method", 3, nullptr);
-
-
-            // TODO: Check evironment value GST_PLUGIN_PATH
-
-            // Capsfilter.
-            GstCaps* iciCaps = gst_caps_new_simple(
-                "video/x-raw",
-                "format", G_TYPE_STRING, "UYVY",
-                "width", G_TYPE_INT, 720,
-                "height", G_TYPE_INT, 480,
-                nullptr);
-
-            camSrcCapsFilter = gst_element_factory_make("capsfilter", nullptr);
-
-            gst_bin_add(GST_BIN(camPipeline), m_pCamSrc);
-            gst_bin_add(GST_BIN(camPipeline), camSrcCapsFilter);
-
-            if(! gst_element_link_pads_filtered(m_pCamSrc, "src", camSrcCapsFilter, "sink", iciCaps))
-            {
-                LWRN_(TAG, "Failed to link ici source to ici filter");
-            }
-            gst_caps_unref(iciCaps);
-        }
-        else if(camSrc.compare("v4l2") == 0)
-        {
-            m_pCamSrc = gst_element_factory_make("v4l2src", nullptr);
-            gst_bin_add(GST_BIN(camPipeline), m_pCamSrc);
-        }
-        else
-        {
-            m_pCamSrc = gst_element_factory_make("videotestsrc", nullptr);
-            gst_bin_add(GST_BIN(camPipeline), m_pCamSrc);
-        }
-
-        m_pCamSink = gst_element_factory_make("waylandsink", nullptr);
-        m_pPostProc = gst_element_factory_make("vaapipostproc", nullptr);
-        m_pScale = gst_element_factory_make("videoscale", nullptr);
-        m_pScaleFilter = gst_element_factory_make("capsfilter", nullptr);
-
-
-        // Failed to create GStreamer elements.
-        if(
-            m_pCamSrc == nullptr
-            || m_pPostProc == nullptr
-            || m_pScale == nullptr
-            || m_pScaleFilter == nullptr
-            || m_pCamSink == nullptr)
-        {
-            return nullptr;
-        }
-
-        // Add to bin.
-        gst_bin_add(GST_BIN(camPipeline), m_pPostProc);
-        gst_bin_add(GST_BIN(camPipeline), m_pScale);
-        gst_bin_add(GST_BIN(camPipeline), m_pScaleFilter);
-        gst_bin_add(GST_BIN(camPipeline), m_pCamSink);
-
-        GstCaps* caps = scaleCapsfilter();
-
-        // Link GstElements.
-        if(camSrcCapsFilter != nullptr)
-        {
-            if(! gst_element_link_pads(camSrcCapsFilter, "src", m_pPostProc, "sink"))
-            {
-                LWRN_(TAG, "Failed to link source capsfilter to post-processor");
-            }
-        }
-        else
-        {
-            if(! gst_element_link_pads(m_pCamSrc, "src", m_pPostProc, "sink"))
-            {
-                LWRN_(TAG, "Failed to link source to post-processor");
-            }
-        }
-        if(! gst_element_link_pads(m_pPostProc, "src", m_pScale, "sink"))
-        {
-            LWRN_(TAG, "Failed to link post-processor to scaler");
-        }
-        if(! gst_element_link_pads_filtered(m_pScale, "src", m_pScaleFilter, "sink", caps))
-        {
-            LWRN_(TAG, "Failed to link scaler to caps-filter");
-        }
-        gst_caps_unref(caps);
-        if(! gst_element_link_pads(m_pScaleFilter, "src", m_pCamSink, "sink"))
-        {
-            LWRN_(TAG, "Failed to link caps-filter to sink");
-        }
-
-        return camPipeline;
-    }
 
     /*
       Intialize
@@ -185,16 +77,35 @@ namespace earlyapp
         OutputDevice::init(pConf);
 
         m_pConf = pConf;
-        // Display size.
-        setDisplaySize(pConf->displayWidth(), pConf->displayHeight());
 
-        GstElement* camPipeline = createPipeline(pConf);
-        if(! GStreamerApp::init(camPipeline, true))
-        {
-            LERR_(TAG, "Failed to init GST app.");
-            return;
-        }
+        m_ICIEnabled = ConfigureICI();
+        strcpy(m_iciParam.stream, "/dev/intel_stream27");
 
+        // Set output width/height with user set values.
+        // Set default if not set.
+        m_iciParam.ow = m_pConf->displayWidth();
+        m_iciParam.oh = m_pConf->displayHeight();
+        if((int) m_iciParam.ow == Configuration::DONT_CARE)
+            m_iciParam.ow = DEFAULT_CAMERA_WIDTH;
+        if((int) m_iciParam.oh == Configuration::DONT_CARE)
+            m_iciParam.oh = DEFAULT_CAMERA_HEIGHT;
+
+        m_iciParam.iw = DEFAULT_CAMERA_WIDTH;
+        m_iciParam.ih = DEFAULT_CAMERA_HEIGHT;
+        m_iciParam.isys_w = 0;
+        m_iciParam.isys_h = 0;
+        m_iciParam.stride_width = 736;
+        m_iciParam.use_wh = 0;
+        m_iciParam.in_fourcc = ICI_FORMAT_UYVY;
+
+        m_iciParam.buffer_count = 4;
+        m_iciParam.port = 4;
+        m_iciParam.fullscreen = 0;
+        m_iciParam.interlaced = 0;
+        m_iciParam.frames_count = 0;
+        m_iciParam.stream_input = CVBS_INPUT;
+        m_iciParam.mem_type = ICI_MEM_DMABUF;
+        m_stream_id = 27;
         LINF_(TAG, "Camerea intialized.");
     }
 
@@ -204,10 +115,19 @@ namespace earlyapp
     void CameraDevice::play(void)
     {
         LINF_(TAG, "CameraDevice play");
-        // Initialization again makes ICI camera last longer.
-        //init(m_pConf);
-        OutputDevice::outputGPIOPattern();
-        startPlay();
+        if(m_ICIEnabled)
+        {
+            // Create a thread for the camera dispaly and run.
+                m_pThreadGrpRVC = new(boost::thread_group);
+                m_pThreadRVC = m_pThreadGrpRVC->create_thread(
+                    boost::bind(
+                        &displayCamera, m_iciParam, m_stream_id));
+            OutputDevice::outputGPIOPattern();
+        }
+        else
+        {
+            LINF_(TAG, "Fail CameraDevice play...");
+        }
     }
 
     /*
@@ -216,7 +136,20 @@ namespace earlyapp
     void CameraDevice::stop(void)
     {
         LINF_(TAG, "Stopping camera...");
-        stopPlay();
+	    if(m_ICIEnabled)
+        {
+            iciStopDisplay(0);
+            // Wait for thread join.
+            if(m_pThreadGrpRVC)
+            {
+                m_pThreadGrpRVC->join_all();
+                delete m_pThreadGrpRVC;
+                m_pThreadGrpRVC = nullptr;
+                m_pThreadRVC = nullptr;
+            }
+        }
+        else
+            LINF_(TAG, "Fail Stopping camera...");
     }
 
     /*
@@ -225,6 +158,13 @@ namespace earlyapp
     void CameraDevice::terminate(void)
     {
         LINF_(TAG, "CameraDevice terminate");
+    }
+
+    void CameraDevice::displayCamera(setup m_iciParam, int stream_id)
+    {
+        LINF_(TAG, "Display loop.");
+
+        iciStartDisplay(m_iciParam, stream_id, 1);
     }
 
 } // namespace

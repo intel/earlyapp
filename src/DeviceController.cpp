@@ -27,13 +27,26 @@
 #include <string>
 #include <vector>
 #include <boost/format.hpp>
+#include <mutex>
+#include <time.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include "EALog.h"
+#include "Configuration.hpp"
 #include "DeviceController.hpp"
 #include "SystemStatusTracker.hpp"
+#include "OutputDevice.hpp"
+
+#ifdef USE_GSTREAMER
+#include "GstAudioDevice.hpp"
+#include "GstVideoDevice.hpp"
+#include "GstCameraDevice.hpp"
+#else
 #include "AudioDevice.hpp"
 #include "VideoDevice.hpp"
 #include "CameraDevice.hpp"
-#include "Configuration.hpp"
+#endif
+
 
 // A tag for DeviceController.
 #define TAG "DCTL"
@@ -52,7 +65,7 @@ namespace earlyapp
     /*
       Initialize device controller.
      */
-    void DeviceController::init(AudioDevice* pAud, VideoDevice* pVid, CameraDevice* pCam)
+    void DeviceController::init(OutputDevice* pAud, OutputDevice* pVid, OutputDevice* pCam)
     {
         if(m_pSST == nullptr)
         {
@@ -60,16 +73,31 @@ namespace earlyapp
         }
 
         // Register audio, video, camera devices.
-        m_pAud = (pAud == nullptr) ? AudioDevice::getInstance():pAud;
-        m_pVid = (pVid == nullptr) ? VideoDevice::getInstance():pVid;
-        m_pCam = (pCam == nullptr) ? CameraDevice::getInstance():pCam;
+#ifdef USE_GSTREAMER
+        m_pAud =
+            (pAud == nullptr) ? GstAudioDevice::getInstance():pAud;
+        m_pVid =
+            (pVid == nullptr) ? GstVideoDevice::getInstance():pVid;
+        m_pCam =
+            (pCam == nullptr) ? GstCameraDevice::getInstance():pCam;
+#else
+        m_pAud =
+            (pAud == nullptr) ? AudioDevice::getInstance():pAud;
+        m_pVid =
+            (pVid == nullptr) ? VideoDevice::getInstance():pVid;
+        m_pCam =
+            (pCam == nullptr) ? CameraDevice::getInstance():pCam;
+#endif
 
-        m_devs.insert(m_pAud);
-        m_devs.insert(m_pVid);
-        m_devs.insert(m_pCam);
+        addDevice(m_pAud);
+        addDevice(m_pVid);
+        addDevice(m_pCam);
 
-        // Initalization.
-        for(auto& it: m_devs)
+        // Wait for the Wayland.
+        waitForWayland();
+
+        // Initalize devices.
+        for(auto& it: m_Devs)
         {
             it->init(m_pConf);
         }
@@ -92,12 +120,27 @@ namespace earlyapp
                 // Audio device.
                 std::shared_ptr<DeviceParameter> audioParam(new DeviceParameter());
                 audioParam->setFileToPlay(m_pConf->audioRVCSoundPath());
-                m_pAud->preparePlay(audioParam);
-                m_pAud->play();
+
+                if(m_pAud != nullptr)
+                {
+                    m_pAud->preparePlay(audioParam);
+                    m_pAud->play();
+                }
+                else
+                {
+                    LWRN_(TAG, "Invaid Audio device: BOOTRVC");
+                }
 
                 // Camera device.
-                m_pCam->preparePlay();
-                m_pCam->play();
+                if(m_pCam != nullptr)
+                {
+                    m_pCam->preparePlay();
+                    m_pCam->play();
+                }
+                else
+                {
+                    LWRN_(TAG, "Invalid Camera device: BOOTRVC");
+                }
             }
             break;
 
@@ -106,27 +149,34 @@ namespace earlyapp
                 // Audio device.
                 std::shared_ptr<DeviceParameter> audioParam(new DeviceParameter());
                 audioParam->setFileToPlay(m_pConf->audioSplashSoundPath());
-                m_pAud->preparePlay(audioParam);
-                m_pAud->play();
+                if(m_pAud != nullptr)
+                {
+                    m_pAud->preparePlay(audioParam);
+                    m_pAud->play();
+                }
+                else
+                {
+                    LWRN_(TAG, "Invalid Audio device: BOOTVIDEO");
+                }
 
                 // Video device.
-                m_pVid->preparePlay(nullptr);
-                m_pVid->play();
-                // The VideoDevice will be held until it gets EOS.
-                m_pVid->prepareStop();
-                m_pVid->stop();
+                if(m_pVid != nullptr)
+                {
+                    m_pVid->preparePlay(nullptr);
+                    m_pVid->play();
+                    // The VideoDevice will be held until it gets EOS.
+                    m_pVid->prepareStop();
+                    m_pVid->stop();
+                }
+                else
+                {
+                    LWRN_(TAG, "Invalid Video device: BOOTVIDEO");
+                }
             }
             break;
 
             case SystemStatusTracker::eSTATE_IDLE:
-                m_pAud->prepareStop();
-                m_pAud->stop();
-
-                m_pCam->prepareStop();
-                m_pCam->stop();
-
-                m_pVid->prepareStop();
-                m_pVid->stop();
+                stopAllDevices();
             break;
 
             case SystemStatusTracker::eSTATE_RVC:
@@ -134,12 +184,27 @@ namespace earlyapp
                 // Audio device.
                 std::shared_ptr<DeviceParameter> audioParam(new DeviceParameter());
                 audioParam->setFileToPlay(m_pConf->audioRVCSoundPath());
-                m_pAud->preparePlay(audioParam);
-                m_pAud->play();
+
+                if(m_pAud != nullptr)
+                {
+                    m_pAud->preparePlay(audioParam);
+                    m_pAud->play();
+                }
+                else
+                {
+                    LWRN_(TAG, "Invalid Audio device: RVC");
+                }
 
                 // Camera device.
-                m_pCam->preparePlay();
-                m_pCam->play();
+                if(m_pCam != nullptr)
+                {
+                    m_pCam->preparePlay();
+                    m_pCam->play();
+                }
+                else
+                {
+                    LWRN_(TAG, "Invalid Camera device: RVC");
+                }
             }
             break;
             default:
@@ -154,7 +219,7 @@ namespace earlyapp
      */
     void DeviceController::stopAllDevices(void)
     {
-        for(auto& it: m_devs)
+        for(auto& it: m_Devs)
         {
             it->prepareStop();
             it->stop();
@@ -166,7 +231,7 @@ namespace earlyapp
      */
     void DeviceController::terminateAllDevices(void)
     {
-        for(auto& it: m_devs)
+        for(auto& it: m_Devs)
         {
             it->terminate();
         }
@@ -185,6 +250,50 @@ namespace earlyapp
      */
     int DeviceController::numDevices(void)
     {
-        return (int) m_devs.size();
+        return (int) m_Devs.size();
+    }
+
+    /*
+      Add output device.
+     */
+    void DeviceController::addDevice(OutputDevice* pDev)
+    {
+        if(pDev != nullptr)
+            m_Devs.insert(pDev);
+        else
+            LWRN_(TAG, "Device not added");
+    }
+
+    /*
+      Block until the Wayland compositor is ready.
+     */
+    void DeviceController::waitForWayland(void)
+    {
+        char WLSocketPath[WAYLAND_SOCKET_PATH_LENGTH];
+        const char* pXDGEnv = getenv(XDG_RUNTIME_DIR);
+        const char* pWLDispEnv = getenv(WAYLAND_DISPLAY);
+
+        if(pXDGEnv != nullptr)
+        {
+            // Use default file name if not defined.
+            if(pWLDispEnv == nullptr)
+            {
+                LWRN_(TAG, "WAYLAND_DISPLAY has not defined");
+                pWLDispEnv = DEFAULT_WAYLAND_SOCKET;
+            }
+
+            struct stat st;
+            snprintf(WLSocketPath, WAYLAND_SOCKET_PATH_LENGTH, "%s/%s", pXDGEnv, pWLDispEnv);
+            LINF_(TAG, "Waiting for wayland socket: " <<  WLSocketPath);
+
+            while(stat(WLSocketPath, &st) != 0)
+            {
+                usleep(100);
+            }
+        }
+        else
+        {
+            LWRN_(TAG, "XDG_RUNTIM_DIR not defined. Abandoning Wayland wayting");
+        }
     }
 } // namespace

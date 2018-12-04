@@ -14,12 +14,13 @@ https://opensource.org/licenses/MIT
 ## Dependencies
 - CMake
 - Boost libraries
-- GStreamer-1.0
+- GStreamer
+- ALSA
+- Intel Media SDK
 
 
 ## Program options
  - --help: Show usage.
- - -c [--camera-input] &lt;[ici|v4l2]&gt;: Set camera input source, default is ici.
  - -s [--splash-video] &lt;file path&gt;: Set splash video path.
  - -d [--cbc-device] &lt;device path&gt;: Set CBC device path.
  - --bootup-sound &lt;file path&gt;: Set bootup sound path.
@@ -63,3 +64,11 @@ https://opensource.org/licenses/MIT
   $ cmake -DUSE_DMESGLOG=ON ..
   ```
 
+ - USE_GSTREAMER
+ : Use GStreamer and GStreamer plugins for Audio / Camera and Video playback instead of ALSA, ICI and Media SDK.
+   * Uses GStreamer pipelines.
+   * Camera pipeline supports choosing source either of ici, v4l2 or testsrc.
+
+  ```shell
+  $ cmake -DUSE_GSTREAMER=ON ..
+  ```

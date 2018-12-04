@@ -27,15 +27,26 @@
 #pragma once
 
 #include "OutputDevice.hpp"
-#include "GStreamerApp.hpp"
 #include "Configuration.hpp"
+#include <boost/thread.hpp>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "pipeline-cfg.h"
+#include "icitest.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 namespace earlyapp
 {
     /**
       @brief A class abstracts camera device.
      */
-    class CameraDevice: public OutputDevice, GStreamerApp
+    class CameraDevice: public OutputDevice
     {
     public:
         /**
@@ -69,13 +80,6 @@ namespace earlyapp
         */
         virtual ~CameraDevice(void);
 
-    protected:
-        /**
-          @brief Create a GStreamer camera pipeline.
-          @pConf User set configuration parameter.
-         */
-        virtual GstElement* createPipeline(std::shared_ptr<Configuration> pConf);
-
     private:
         /**
            @brief Default constructor hidden in preivate to prevent instancitation.
@@ -92,13 +96,24 @@ namespace earlyapp
         */
         std::shared_ptr<Configuration> m_pConf;
 
+        setup m_iciParam;
+
+        int m_stream_id = -1;
+
+        int m_ICIEnabled = 1;
+
         /*
-          GStreamer elements.
+          Boost thread.
          */
-        GstElement* m_pCamSrc = nullptr;
-        GstElement* m_pCamSink = nullptr;
-        GstElement* m_pPostProc = nullptr;
-        GstElement* m_pScale = nullptr;
-        GstElement* m_pScaleFilter = nullptr;
+        boost::thread_group* m_pThreadGrpRVC = nullptr;
+        boost::thread* m_pThreadRVC = nullptr;
+
+        static void displayCamera(setup, int);
+
+        /**
+           @brief Default camera width, height.
+        */
+        const unsigned int DEFAULT_CAMERA_WIDTH = 720;
+        const unsigned int DEFAULT_CAMERA_HEIGHT = 240;
     };
 } // namespace

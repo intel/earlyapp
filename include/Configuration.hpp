@@ -57,6 +57,7 @@ namespace earlyapp
         static const unsigned int DEFAULT_DISPLAY_WIDTH;
         static const unsigned int DEFAULT_DISPLAY_HEIGHT;
         static const int DEFAULT_GPIONUMBER;
+        static const useconds_t DEFAULT_GPIOSUSTAIN;
 
 
         /*
@@ -71,6 +72,7 @@ namespace earlyapp
         static const char* KEY_DISPLAYWIDTH;
         static const char* KEY_DISPLAYHEIGHT;
         static const char* KEY_GPIONUMBER;
+        static const char* KEY_GPIOSUSTAIN;
 
         /**
            @brief Constructor.
@@ -147,6 +149,11 @@ namespace earlyapp
           @brief Returns user set output GPIO.
          */
         int gpioNumber(void) const;
+
+        /**
+          @brief Returns GPIO peak sustaining time in ms.
+         */
+        unsigned int gpioSustain(void) const;
 
         /**
            @brief Disable copy assigned operators.

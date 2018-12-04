@@ -45,15 +45,16 @@ namespace earlyapp
 
 
     // Default values.
-    const char* Configuration::DEFAULT_AUDIO_SPLASHSOUND_PATH = "./res/jingle.wav";
-    const char* Configuration::DEFAULT_AUDIO_RVCSOUND_PATH = "./res/beep.wav";
+    const char* Configuration::DEFAULT_AUDIO_SPLASHSOUND_PATH = "/usr/share/earlyapp/jingle.wav";
+    const char* Configuration::DEFAULT_AUDIO_RVCSOUND_PATH = "/usr/share/earlyapp/beep.wav";
     const char* Configuration::DEFAULT_CAMERA_INPUTSOURCE = "ici";
-    const char* Configuration::DEFAULT_VIDEO_SPLASH_PATH = "./res/splash_video.mp4";
+    const char* Configuration::DEFAULT_VIDEO_SPLASH_PATH = "/usr/share/earlyapp/splash_video.h264";
     const char* Configuration::DEFAULT_CBCDEVICE_PATH = "/dev/cbc-early-signals";
     const char* Configuration::DEFAULT_TESTCBCDEVICE_PATH = "";
     const unsigned int Configuration::DEFAULT_DISPLAY_WIDTH = DONT_CARE;
     const unsigned int Configuration::DEFAULT_DISPLAY_HEIGHT = DONT_CARE;
     const int Configuration::DEFAULT_GPIONUMBER = NOT_SET;
+    const unsigned int Configuration::DEFAULT_GPIOSUSTAIN = 1;
 
 
     // Configuration keys.
@@ -66,6 +67,7 @@ namespace earlyapp
     const char* Configuration::KEY_DISPLAYWIDTH = "width";
     const char* Configuration::KEY_DISPLAYHEIGHT = "height";
     const char* Configuration::KEY_GPIONUMBER = "gpio-number";
+    const char* Configuration::KEY_GPIOSUSTAIN = "gpio-sustain";
 
 
 
@@ -183,6 +185,13 @@ namespace earlyapp
         return gpio;
     }
 
+    // GPIO peak sustaining time in ms.
+    unsigned int Configuration::gpioSustain(void) const
+    {
+        unsigned int peakSustain = m_VM[Configuration::KEY_GPIOSUSTAIN].as<unsigned int>();
+        return peakSustain;
+    }
+
     // Destructor.
     Configuration::~Configuration(void)
     {
@@ -206,12 +215,15 @@ namespace earlyapp
 
                 // Version.
                 ("version,v", "Print version number")
-
+/*
+  Camera source option is supported with GStreamer.
+ */
+#ifdef USE_GSTREAMER
                 // Camera input source.
                 ("camera-input,c",
                  boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_CAMERA_INPUTSOURCE)->notifier(&checkCameraParameter),
                  "Camera input source.")
-
+#endif
                 // Splash video.
                 ("splash-video,s",
                  boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_VIDEO_SPLASH_PATH),
@@ -250,7 +262,12 @@ namespace earlyapp
                 // GPIO number
                 (Configuration::KEY_GPIONUMBER,
                  boost::program_options::value<int>()->default_value(Configuration::DEFAULT_GPIONUMBER),
-                 "GPIO number for KPI measurements. Negative values will be ignored.");
+                 "GPIO number for KPI measurements. Negative values will be ignored.")
+
+                // GPIO sustaining time.
+                (Configuration::KEY_GPIOSUSTAIN,
+                 boost::program_options::value<unsigned int>()->default_value(Configuration::DEFAULT_GPIOSUSTAIN),
+                 "GPIO sustaining time in ms for KPI measurements.");
 
 
             boost::program_options::store(

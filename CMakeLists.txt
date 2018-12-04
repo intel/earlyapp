@@ -38,7 +38,7 @@ CONFIGURE_FILE("version.h.in" ${CMAKE_BINARY_DIR}/include/EAVersion.h)
 #  - Log output
 OPTION(USE_LOGOUTPUT "Control detailed log output to standard out" OFF)
 IF(USE_LOGOUTPUT)
-    ADD_DEFINITIONS(-DUSE_LOGOUTPUT)
+    ADD_DEFINITIONS(-DUSE_LOGOUTPUT -DBOOST_LOG_DYN_LINK)
 ENDIF(USE_LOGOUTPUT)
 
 #  - Log demsg output
@@ -47,13 +47,21 @@ IF(USE_DMESGLOG)
     ADD_DEFINITIONS(-DUSE_DMESGLOG)
 ENDIF(USE_DMESGLOG)
 
+#  - GStreamer
+OPTION(USE_GSTREAMER "Use GStreamer for audio, camera and video" OFF)
+IF(USE_GSTREAMER)
+    ADD_DEFINITIONS(-DUSE_GSTREAMER)
+ENDIF(USE_GSTREAMER)
+
 
 # Program executable.
 SET(PROGRAM_EXE ${CMAKE_PROJECT_NAME})
-SUBDIRS(src)
+SUBDIRS(ext/MediaSDK/src ext/CameraICI/src src)
+
 
 # Service configuration
 SUBDIRS(config)
+
 
 # Resources files
 SUBDIRS(res)

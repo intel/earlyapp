@@ -45,7 +45,7 @@
 namespace earlyapp
 {
     // Constructor.
-    GPIOControl::GPIOControl(int gpioNumber, useconds_t sleepTime)
+    GPIOControl::GPIOControl(int gpioNumber, unsigned int peakSustainTime)
     {
         // Disregards for wrong GPIO settings.
         if(gpioNumber > 0)
@@ -59,6 +59,10 @@ namespace earlyapp
             m_Valid = false;
             LINF_(TAG, "Not controlling GPIO.");
         }
+
+        // Peak time. x 1000 to make it ms.
+        m_SustainTime = peakSustainTime * 1000;
+        LINF_(TAG, "Peak sustaining time(us): " << m_SustainTime);
     }
 
     // Output GPIO.
@@ -69,7 +73,7 @@ namespace earlyapp
         size_t gpioStrLen = strlen(cstrGPIO);
 
         // Value path.
-        int valueFd = open(valuePath()->c_str(), O_WRONLY|O_EXCL);
+        int valueFd = open(valuePath()->c_str(), O_WRONLY);
         if(valueFd < 0)
         {
             // Set export / direction path when failed to open the valuePath().
@@ -109,10 +113,10 @@ namespace earlyapp
         return true;
     }
 
-    // Sleep for given time.
-    void GPIOControl::sleep(void)
+    // Sustain current output for given time.
+    void GPIOControl::sustain(void)
     {
-        usleep(m_SleepTime);
+        usleep(m_SustainTime);
     }
 
     // GPIO export path.

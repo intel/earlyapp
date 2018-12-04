@@ -1,0 +1,12 @@
+[Unit]
+Description=GP2.0 Early application 
+DefaultDependencies=no
+Requires=ias-earlyapp.service cbc_attach-earlyapp.service
+After=ias-earlyapp.service cbc_attach-earlyapp.service
+
+[Service]
+Environment=XDG_RUNTIME_DIR=/run/ias
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=GST_PLUGIN_PATH=/usr/lib/gstreamer-1.0
+ExecStart=/usr/bin/earlyapp --rvc-sound /usr/share/earlyapp/beep.wav --bootup-sound /usr/share/earlyapp/jingle.wav --splash-video /usr/share/earlyapp/splash_video.mp4 --width 1920 --height 1080
+Slice=earlyapp.slice

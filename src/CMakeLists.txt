@@ -27,30 +27,10 @@
 SET(CMAKE_BUILD_TYPE Debug)
 SET(CMAKE_VERBOSE_MAKEFILE true)
 
+# pkg-config
+FIND_PACKAGE(PkgConfig REQUIRED)
 
-# Source files.
-SET(EXE_MAIN main.cpp)
-SET(SRC_FILES
-    AudioDevice.cpp
-    CameraDevice.cpp
-    CBCEvent.cpp
-    CBCEventDevice.cpp
-    CBCEventListener.cpp
-    CBCEventReceiver.cpp
-    Configuration.cpp
-    DeviceController.cpp
-    GStreamerApp.cpp
-    GPIOControl.cpp
-    OutputDevice.cpp
-    SystemStatusTracker.cpp
-    VideoDevice.cpp
-    VirtualCBCEventDevice.cpp
-    EALog.cpp)
-
-
-# External dependencies.
-
-# Boost
+# Check Boost libraries
 FIND_PACKAGE(Boost REQUIRED
     COMPONENTS
     log
@@ -58,32 +38,108 @@ FIND_PACKAGE(Boost REQUIRED
     system
     program_options)
 
-# GStreamer
-FIND_PACKAGE(PkgConfig REQUIRED)
-PKG_CHECK_MODULES(GST REQUIRED gstreamer-1.0)
+# wayland-client
+PKG_CHECK_MODULES(WAYLAND REQUIRED wayland-client)
 
+# Basic source files.
+SET(EXE_MAIN main.cpp)
+SET(SRC_FILES
+    CBCEvent.cpp
+    CBCEventDevice.cpp
+    CBCEventListener.cpp
+    CBCEventReceiver.cpp
+    Configuration.cpp
+    DeviceController.cpp
+    GPIOControl.cpp
+    OutputDevice.cpp
+    SystemStatusTracker.cpp
+    VirtualCBCEventDevice.cpp
+    EALog.cpp)
+
+# Basic includes
 INCLUDE_DIRECTORIES(
     ${CMAKE_BINARY_DIR}/include
     ${PROJECT_SOURCE_DIR}/include
     ${Boost_INCLUDE_DIRS}
-    ${GST_INCLUDE_DIRS})
+    ${WAYLAND_INCLUDE_DIRS})
 
-
-# Compile options.
-ADD_COMPILE_OPTIONS(-Wall ${GST_CFLAGS})
-
-
-# Libraries
+# Basic libraries
 LINK_LIBRARIES(
      stdc++
      pthread
      ${Boost_LIBRARIES}
-     ${GST_LIBRARIES})
+     ${WAYLAND_LIBRARIES})
 
+IF(USE_GSTREAMER)
+# GStreamer
+    SET(SRC_FILES
+        ${SRC_FILES}
+        GStreamerApp.cpp
+        GstAudioDevice.cpp
+        GstCameraDevice.cpp
+        GstVideoDevice.cpp)
+
+    # GStreamer package config.
+    PKG_CHECK_MODULES(GST REQUIRED gstreamer-1.0)
+
+    # Include dirs
+    INCLUDE_DIRECTORIES(
+        ${INCLUDE_DIRECTORIES}
+        ${GST_INCLUDE_DIRS})
+
+    # Libraries
+    LINK_LIBRARIES(
+        ${LINK_LIBRARIES}
+        ${GST_LIBRARIES})
+ELSE()
+    SET(SRC_FILES
+        ${SRC_FILES}
+        AudioDevice.cpp
+        CameraDevice.cpp
+        VideoDevice.cpp)
+
+    # Medai SDK, ALSA, EGL, LIBVA
+    PKG_CHECK_MODULES(MSDK REQUIRED mfx)
+    PKG_CHECK_MODULES(ALSA REQUIRED alsa)
+    PKG_CHECK_MODULES(EGL REQUIRED egl)
+    PKG_CHECK_MODULES(LIBVA REQUIRED libva)
+
+    # LIBVA_SUPPORT
+    ADD_DEFINITIONS(-DLIBVA_SUPPORT)
+
+    # Include dirs
+    INCLUDE_DIRECTORIES(
+        ${INCLUDE_DIRECTORIES}
+        ${PROJECT_SOURCE_DIR}/ext/MediaSDK/include
+        ${PROJECT_SOURCE_DIR}/ext/CameraICI/include        
+        ${MSDK_INCLUDE_DIRS}
+        ${ALSA_INCLUDE_DIRS}
+        ${EGL_INCLUDE_DIRS})
+
+    # Link libraries
+    LINK_LIBRARIES(
+        msdk
+        iciCam
+        ${LINK_LIBRARIES}
+        ${MSDK_LIBRARIES}
+        ${ALSA_LIBRARIES}
+        ${EGL_LIBRARIES})
+ENDIF()
+
+# Compile options.
+ADD_COMPILE_OPTIONS(
+    -Wall
+    -Wformat -Wformat-security
+    -O2 -D_FORTIFY_SOURCE=2
+    -fPIE -fPIC
+    -fstack-protector-strong
+    ${GST_CFLAGS})
+
+# Add linker flags.
+SET(CMAKE_EXE_LINKER_FLAGS "-pie -z noexecstack -z relro -z now")
 
 #Object libary for unittests.
 ADD_LIBRARY(src OBJECT ${SRC_FILES})
-
 
 # Build target extcutable.
 ADD_EXECUTABLE(${PROGRAM_EXE} ${EXE_MAIN})

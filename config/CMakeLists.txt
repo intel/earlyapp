@@ -25,7 +25,6 @@
 
 # Resource files.
 SET(CONF_FILES
-    earlyapp.service
     earlyapp.target
     earlyapp.slice
     ias-earlyapp.service
@@ -34,14 +33,31 @@ SET(CONF_FILES
     earlyapp_resume.service
     fb_splash.service
     glmark2.service
-    glmark2_resume.service
-    )
+    glmark2_resume.service)
 
+# Early App Service file.
+# GStreamer base devices require different settings.
+SET(EAS_TARGET earlyapp.service)
+IF(USE_GSTREAMER)
+    SET(EAS_SRC earlyapp_gst.service)
+ELSE()
+    SET(EAS_SRC earlyapp.service)
+ENDIF()
+
+
+# Script files.
 SET(SCRIPT_FILES
-    kpi_gpio.sh
-    )
+    kpi_gpio.sh)
 
+
+# Install earlyapp.service
+INSTALL(FILES ${EAS_SRC} RENAME ${EAS_TARGET}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system/)
+
+# Install other configuration files.
 INSTALL(FILES ${CONF_FILES}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system/)
+
+# Install scripts.
 INSTALL(PROGRAMS ${SCRIPT_FILES}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/)
