@@ -1,7 +1,0 @@
-[Unit]
-Description=cbc attach
-DefaultDependencies=no
-
-[Service]
-ExecStart=/usr/bin/cbc_attach
-Slice=earlyapp.slice
