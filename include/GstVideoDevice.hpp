@@ -79,7 +79,7 @@ namespace earlyapp
 
     private:
         // Hide the default constructor to prevent instancitating.
-        GstVideoDevice(void) { }
+        GstVideoDevice(void) { OutputDevice::m_pDevName = "Gst Video"; }
 
         // Pointer for a video playback device instance.
         static GstVideoDevice* m_pVDev;
@@ -92,7 +92,7 @@ namespace earlyapp
         */
         GstElement* m_pVideoSrc = nullptr;
         GstElement* m_pVideoSink = nullptr;
-        GstElement* m_pDecodeBin = nullptr;
+        GstElement* m_pDecoder = nullptr;
         GstElement* m_pVideoScale = nullptr;
         GstElement* m_pScaleFilter = nullptr;
     };

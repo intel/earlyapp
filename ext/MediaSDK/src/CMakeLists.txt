@@ -51,7 +51,7 @@ SET(SRC_FILES
 FIND_PACKAGE(PkgConfig REQUIRED)
 
 # Media SDK
-PKG_CHECK_MODULES(MSDK REQUIRED mfx)
+PKG_CHECK_MODULES(MSDK REQUIRED libmfxhw64)
 
 # LibDRM
 PKG_CHECK_MODULES(LIBDRM REQUIRED libdrm)
@@ -85,6 +85,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "-pie -z noexecstack -z relro -z now")
 LINK_LIBRARIES(
      stdc++
      pthread
+     dl
      ${MSDK_LIBRARIES}
      ${LIBDRM_LIBRARIES})
 

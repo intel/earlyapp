@@ -84,7 +84,7 @@ namespace earlyapp
         /**
            @brief Default constructor hidden in preivate to prevent instancitation.
         */
-        CameraDevice(void) { }
+        CameraDevice(void) { OutputDevice::m_pDevName = "ICI Camera"; }
 
         /**
            @brief Camear device instance.
@@ -108,7 +108,9 @@ namespace earlyapp
         boost::thread_group* m_pThreadGrpRVC = nullptr;
         boost::thread* m_pThreadRVC = nullptr;
 
-        static void displayCamera(setup, int);
+        static void displayCamera(setup, int, void*);
+
+        void* m_pGPIOClass = NULL;
 
         /**
            @brief Default camera width, height.

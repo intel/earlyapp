@@ -43,27 +43,6 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 enum {MCTF_BITRATE_MULTIPLIER = 100000};
 #endif
 
-
-#if defined(WIN32) || defined(WIN64)
-
-enum {
-    MFX_HANDLE_DEVICEWINDOW  = 0x101 /* A handle to the render window */
-}; //mfxHandleType
-
-#ifndef D3D_SURFACES_SUPPORT
-#define D3D_SURFACES_SUPPORT 1
-#endif
-
-#if defined(_WIN32) && !defined(MFX_D3D11_SUPPORT)
-#include <sdkddkver.h>
-#if (NTDDI_VERSION >= NTDDI_VERSION_FROM_WIN32_WINNT2(0x0602)) // >= _WIN32_WINNT_WIN8
-    #define MFX_D3D11_SUPPORT 1 // Enable D3D11 support if SDK allows
-#else
-    #define MFX_D3D11_SUPPORT 0
-#endif
-#endif // #if defined(WIN32) && !defined(MFX_D3D11_SUPPORT)
-#endif // #if defined(WIN32) || defined(WIN64)
-
 enum
 {
 #define __DECLARE(type) MFX_MONITOR_ ## type
@@ -122,6 +101,7 @@ enum LibVABackend
 #define MSDK_MAX_FILENAME_LEN 1024
 #define MSDK_MAX_USER_DATA_UNREG_SEI_LEN 80
 
+#ifdef USE_LOGOUTPUT
 #define MSDK_PRINT_RET_MSG(ERR,MSG) {msdk_stringstream tmpStr1;tmpStr1<<std::endl<<"[ERROR], sts=" \
     <<StatusToString(ERR)<<"("<<ERR<<")"<<", "<<__FUNCTION__<<", "<<MSG<<" at "<<__FILE__<<":"<<__LINE__<<std::endl;msdk_err<<tmpStr1.str();}
 
@@ -136,6 +116,17 @@ enum LibVABackend
 #define MSDK_TRACE_WARNING(ERR) MSDK_TRACE_LEVEL(MSDK_TRACE_LEVEL_WARNING, ERR)
 #define MSDK_TRACE_INFO(ERR) MSDK_TRACE_LEVEL(MSDK_TRACE_LEVEL_INFO, ERR)
 #define MSDK_TRACE_DEBUG(ERR) MSDK_TRACE_LEVEL(MSDK_TRACE_LEVEL_DEBUG, ERR)
+#else
+// Surpress messages.
+#define MSDK_PRINT_RET_MSG(ERR,MSG)
+#define MSDK_PRINT_WRN_MSG(WRN,MSG)
+#define MSDK_TRACE_LEVEL(level, ERR)
+#define MSDK_TRACE_CRITICAL(ERR)
+#define MSDK_TRACE_ERROR(ERR)
+#define MSDK_TRACE_WARNING(ERR)
+#define MSDK_TRACE_INFO(ERR)
+#define MSDK_TRACE_DEBUG(ERR)
+#endif
 
 #define MSDK_CHECK_ERROR(P, X, ERR)              {if ((X) == (P)) {msdk_stringstream tmpStr2;tmpStr2<<MSDK_STRING(#X)<<MSDK_STRING("==")<<MSDK_STRING(#P)<<MSDK_STRING(" error"); \
     MSDK_PRINT_RET_MSG(ERR, tmpStr2.str().c_str()); return ERR;}}

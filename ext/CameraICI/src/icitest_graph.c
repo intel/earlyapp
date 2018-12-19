@@ -38,6 +38,9 @@
 #include "icitest_time.h"
 #include "icitest_graph.h"
 
+extern void GPIOControl_outputPattern(void*);
+void * g_GpioClass = NULL;
+static int g_triggerOnce = 1;
 
 PFNGLPROGRAMBINARYOESPROC glProgramBinaryOES = NULL;
 PFNGLGETPROGRAMBINARYOESPROC glGetProgramBinaryOES = NULL;
@@ -403,6 +406,12 @@ void redraw_egl_way(struct window *window, struct buffer *buf,
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	wl_surface_set_opaque_region(window->surface, NULL);
+
+	if(g_triggerOnce && g_GpioClass)
+	{
+		GPIOControl_outputPattern(g_GpioClass);
+		g_triggerOnce = 0;
+	}
 	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
 	if (first_frame_received == 1 && first_frame_rendered == 0) {
 		first_frame_rendered = 1;
@@ -529,12 +538,14 @@ void init_egl(struct display *display, int opaque)
 	BYE_ON(eglDestroyImageKHR == NULL, "EGL_KHR_image_base and EXT_image_dma_buf_import not supported\n");
 }
 
-void create_surface(struct window *window)
+void create_surface(struct window *window, void *gpioClass)
 {
 	struct display *display = window->display;
 	EGLBoolean ret;
 
 	printf("create_surface: ");
+
+	g_GpioClass = gpioClass;
 
 	window->surface = wl_compositor_create_surface(display->compositor);
 	window->shell_surface = wl_shell_get_shell_surface(display->wl_shell,
@@ -793,7 +804,7 @@ void init_gl(struct window *window)
 int init_gem(struct display *display)
 {
 	/* Init GEM */
-	display->drm_fd = drmOpen("i915", NULL);
+	display->drm_fd = drmOpenRender(128);
 	if (display->drm_fd < 0)
 		return -1;
 
@@ -866,7 +877,8 @@ int create_buffer(struct display *display, struct buffer *buffer,
 		return -1;
 	buffer->dbuf_fd = prime.fd;
 
-	ret = drm_intel_bo_flink(buffer->bo, &buffer->flink_name);
+	// FLINK on render node fails with permission denied
+	ret = 0;
 	if (ret) {
 		printf("ERROR: Couldn't flink buffer\n");
 		return -1;

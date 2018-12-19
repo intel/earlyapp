@@ -124,10 +124,16 @@ namespace earlyapp
             // No GPIO control.
             return;
         }
+        m_pGPIOCtrl->outputPattern();
+    }
 
-        // Control GPIO with given sustaining time.
-        m_pGPIOCtrl->output(GPIOControl::HIGH);
-        m_pGPIOCtrl->sustain();
-        m_pGPIOCtrl->output(GPIOControl::LOW);
+    // Device name.
+    const char* OutputDevice::deviceName(void) const
+    {
+        if(m_pDevName == nullptr)
+        {
+            return "UNKNOWN";
+        }
+        return m_pDevName;
     }
 } // namespace

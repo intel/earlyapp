@@ -104,7 +104,7 @@ namespace earlyapp
         } WavHeader;
 
         // Hide the default constructor to prevent instancitating.
-        AudioDevice(void) { }
+        AudioDevice(void) { OutputDevice::m_pDevName = "ALSA Audio"; }
 
         // Program configuration.
         std::shared_ptr<Configuration> m_pConf;

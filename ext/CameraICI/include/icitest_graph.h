@@ -148,7 +148,7 @@ void init_egl(struct display *display, int opaque);
 int init_gem(struct display *display);
 int drm_buffer_to_prime(struct display *display, struct buffer *buffer,
 		unsigned int size);
-void create_surface(struct window *window);
+void create_surface(struct window *window, void *gpioclass);
 void destroy_gem(struct display *display);
 int create_buffer(struct display *display, struct buffer *buffer,
 		unsigned int size);

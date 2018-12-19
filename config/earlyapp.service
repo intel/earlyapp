@@ -1,8 +1,8 @@
 [Unit]
-Description=GP2.0 Early application 
+Description=GP2.0 Early application
 DefaultDependencies=no
-Requires=ias-earlyapp.service cbc_attach-earlyapp.service
-After=ias-earlyapp.service cbc_attach-earlyapp.service
+Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup.service
+After=ias-earlyapp.service cbc_attach.service earlyapp-setup.service
 
 [Service]
 Environment=XDG_RUNTIME_DIR=/run/ias
@@ -10,3 +10,5 @@ Environment=WAYLAND_DISPLAY=wayland-0
 Environment=LIBVA_DRIVER_NAME=iHD
 ExecStart=/usr/bin/earlyapp --rvc-sound /usr/share/earlyapp/beep.wav --bootup-sound /usr/share/earlyapp/jingle.wav --splash-video /usr/share/earlyapp/splash_video.h264 --width 1920 --height 1080
 Slice=earlyapp.slice
+User=ias
+SupplementaryGroups=video render

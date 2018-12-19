@@ -71,7 +71,7 @@ namespace earlyapp
 
     private:
         // Hide the default constructor to prevent instancitating.
-        VideoDevice(void) { }
+        VideoDevice(void) { OutputDevice::m_pDevName = "MSDK Video"; }
 
         // Pointer for a video playback device instance.
         static VideoDevice* m_pVDev;

@@ -74,7 +74,14 @@ namespace earlyapp
     void GstVideoDevice::handleNewPad(GstElement* decodeBin, GstPad* pPad, gpointer data)
     {
         GstElement *videoScaler = (GstElement*)data;
-        gst_element_link(decodeBin, videoScaler);
+        if(!gst_element_link(decodeBin, videoScaler))
+        {
+            LWRN_(TAG, "Failed to link for dynamic pad.");
+        }
+        else
+        {
+            LINF_(TAG, "Succeed to link dynamic pad.");
+        }
     }
 
     /*
@@ -89,8 +96,8 @@ namespace earlyapp
         // Sink
         m_pVideoSink = gst_element_factory_make("waylandsink", nullptr);
 
-        // Decode bin
-        m_pDecodeBin = gst_element_factory_make("decodebin", nullptr);
+        // Decoder
+        m_pDecoder = gst_element_factory_make("decodebin", nullptr);
 
         // Scaler
         m_pVideoScale = gst_element_factory_make("videoscale", nullptr);
@@ -104,8 +111,9 @@ namespace earlyapp
             || m_pVideoSink == nullptr
             || m_pVideoScale == nullptr
             || m_pScaleFilter == nullptr
-            || m_pDecodeBin == nullptr)
+            || m_pDecoder == nullptr)
         {
+            LERR_(TAG, "Failed to create a video pipe!");
             return nullptr;
         }
 
@@ -114,7 +122,7 @@ namespace earlyapp
         gst_bin_add_many(
             GST_BIN(videoPipeline),
             m_pVideoSrc,
-            m_pDecodeBin,
+            m_pDecoder,
             m_pVideoScale,
             m_pScaleFilter,
             m_pVideoSink,
@@ -122,11 +130,11 @@ namespace earlyapp
 
         GstCaps* caps = scaleCapsfilter();
 
-        if(! gst_element_link_pads(m_pVideoSrc, "src", m_pDecodeBin, "sink"))
+        if(! gst_element_link_pads(m_pVideoSrc, "src", m_pDecoder, "sink"))
         {
-            LWRN_(TAG, "Failed to link source and decoder");
+            LWRN_(TAG, "Failed to link source and decoder.");
         }
-        if(! gst_element_link_pads(m_pDecodeBin, "src", m_pVideoScale, "sink"))
+        if(! gst_element_link_pads(m_pDecoder, "src", m_pVideoScale, "sink"))
         {
             LWRN_(TAG, "Failed to link decoder and scaler");
         }
@@ -140,8 +148,8 @@ namespace earlyapp
             LWRN_(TAG, "Failed to link filter and sink");
         }
 
-        // Dynamic pads for decode bin.
-        g_signal_connect(m_pDecodeBin, "pad-added", G_CALLBACK(handleNewPad), m_pVideoScale);
+        // Decode bin uses a dynamic pads.
+        g_signal_connect(m_pDecoder, "pad-added", G_CALLBACK(handleNewPad), m_pVideoScale);
 
         return videoPipeline;
     }
@@ -194,12 +202,6 @@ namespace earlyapp
     {
         LINF_(TAG, "GstVideoDevice terminate");
 
-        if(m_pVideoSrc)
-        {
-            gst_object_unparent(GST_OBJECT(m_pVideoSrc));
-            gst_object_unref(GST_OBJECT(m_pVideoSrc));
-            m_pVideoSrc = nullptr;
-        }
 
         if(m_pVideoSink)
         {
@@ -208,11 +210,18 @@ namespace earlyapp
             m_pVideoSink = nullptr;
         }
 
-        if(m_pDecodeBin)
+        if(m_pDecoder)
         {
-            gst_object_unparent(GST_OBJECT(m_pDecodeBin));
-            gst_object_unref(GST_OBJECT(m_pDecodeBin));
-            m_pDecodeBin = nullptr;
+            gst_object_unparent(GST_OBJECT(m_pDecoder));
+            gst_object_unref(GST_OBJECT(m_pDecoder));
+            m_pDecoder = nullptr;
+        }
+
+        if(m_pVideoSrc)
+        {
+            gst_object_unparent(GST_OBJECT(m_pVideoSrc));
+            gst_object_unref(GST_OBJECT(m_pVideoSrc));
+            m_pVideoSrc = nullptr;
         }
     }
 } // namespace

@@ -28,9 +28,9 @@ SET(CONF_FILES
     earlyapp.target
     earlyapp.slice
     ias-earlyapp.service
-    ias-pre.service
-    cbc_attach-earlyapp.service
+    ias-earlyapp-setup.service
     earlyapp_resume.service
+    earlyapp-setup.service
     fb_splash.service
     glmark2.service
     glmark2_resume.service)
@@ -38,12 +38,9 @@ SET(CONF_FILES
 # Early App Service file.
 # GStreamer base devices require different settings.
 SET(EAS_TARGET earlyapp.service)
-IF(USE_GSTREAMER)
-    SET(EAS_SRC earlyapp_gst.service)
-ELSE()
-    SET(EAS_SRC earlyapp.service)
-ENDIF()
-
+SET(EAS_SRC
+    earlyapp_gst.service
+    earlyapp.service)
 
 # Script files.
 SET(SCRIPT_FILES
@@ -51,7 +48,7 @@ SET(SCRIPT_FILES
 
 
 # Install earlyapp.service
-INSTALL(FILES ${EAS_SRC} RENAME ${EAS_TARGET}
+INSTALL(FILES ${EAS_SRC}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system/)
 
 # Install other configuration files.
@@ -61,3 +58,7 @@ INSTALL(FILES ${CONF_FILES}
 # Install scripts.
 INSTALL(PROGRAMS ${SCRIPT_FILES}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/)
+
+# Install udev rules.
+INSTALL(FILES 50-earlyapp.rules
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/udev/rules.d/)

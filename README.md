@@ -21,6 +21,8 @@ https://opensource.org/licenses/MIT
 
 ## Program options
  - --help: Show usage.
+ - -v [ --version ]: Print version number.
+ - -c [ --camera-input ] &lt;cam input&gt; Camera input source selection, only supported with use-gstreamer option. 
  - -s [--splash-video] &lt;file path&gt;: Set splash video path.
  - -d [--cbc-device] &lt;device path&gt;: Set CBC device path.
  - --bootup-sound &lt;file path&gt;: Set bootup sound path.
@@ -28,6 +30,8 @@ https://opensource.org/licenses/MIT
  - -w [--width] &lt;nubmer&gt;: Set display width.
  - -h [--height] &lt;number&gt;: Set display height.
  - --gpio-number &lt;number&gt;: GPIO number for KPI measurements. Negative values will be ignored.
+ - --gpio-sustain &lt;number&gt;: GPIO sustaining time in ms for KPI measurements.
+ - --use-gstreamer : Use GStreamer for auido, camera and video.
 
 
 ## Building
@@ -64,11 +68,4 @@ https://opensource.org/licenses/MIT
   $ cmake -DUSE_DMESGLOG=ON ..
   ```
 
- - USE_GSTREAMER
- : Use GStreamer and GStreamer plugins for Audio / Camera and Video playback instead of ALSA, ICI and Media SDK.
-   * Uses GStreamer pipelines.
-   * Camera pipeline supports choosing source either of ici, v4l2 or testsrc.
 
-  ```shell
-  $ cmake -DUSE_GSTREAMER=ON ..
-  ```

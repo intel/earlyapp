@@ -104,6 +104,13 @@ mfxStatus CVAAPIDeviceWayland::RenderFrame(mfxFrameSurface1 * pSurface, mfxFrame
 
     m_Wayland->RenderBuffer(m_wl_buffer, pSurface->Info.CropW, pSurface->Info.CropH);
 
+    // GPIO output.
+    if(!m_bGotFirstFrame && m_pGPIOCtrl != nullptr)
+    {
+        m_pGPIOCtrl->outputPattern();
+        m_bGotFirstFrame = true;
+    }
+
     return mfx_res;
 }
 
@@ -112,47 +119,7 @@ void CVAAPIDeviceWayland::Close(void)
     m_Wayland->FreeSurface();
 }
 
-CHWDevice* CreateVAAPIDevice(void)
+CHWDevice* CreateVAAPIDevice(earlyapp::GPIOControl* pGPIOCtrl)
 {
-    return new CVAAPIDeviceWayland();
+    return new CVAAPIDeviceWayland(pGPIOCtrl);
 }
-
-CVAAPIDeviceDRM::CVAAPIDeviceDRM(int type)
-    : m_DRMLibVA(type)
-    , m_rndr(NULL)
-{
-}
-
-CVAAPIDeviceDRM::~CVAAPIDeviceDRM(void)
-{
-  MSDK_SAFE_DELETE(m_rndr);
-}
-
-mfxStatus CVAAPIDeviceDRM::Init(mfxHDL hWindow, mfxU16 nViews, mfxU32 nAdapterNum)
-{
-    if (0 == nViews) {
-        return MFX_ERR_NONE;
-    }
-    if (1 == nViews) {
-        if (m_DRMLibVA.getBackendType() == MFX_LIBVA_DRM_RENDERNODE) {
-          return MFX_ERR_NONE;
-        }
-        mfxI32 * monitorType = (mfxI32*)hWindow;
-        if (!monitorType) return MFX_ERR_INVALID_VIDEO_PARAM;
-        try {
-            m_rndr = new drmRenderer(m_DRMLibVA.getFD(), *monitorType);
-        } catch(...) {
-            msdk_printf(MSDK_STRING("vaapi_device: failed to initialize drmrender\n"));
-            return MFX_ERR_UNKNOWN;
-        }
-        return MFX_ERR_NONE;
-    }
-    return MFX_ERR_UNSUPPORTED;
-}
-
-mfxStatus CVAAPIDeviceDRM::RenderFrame(mfxFrameSurface1 * pSurface, mfxFrameAllocator * pmfxAlloc)
-{
-    return (m_rndr)? m_rndr->render(pSurface): MFX_ERR_NONE;
-}
-
-

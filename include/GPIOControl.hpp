@@ -70,6 +70,11 @@ namespace earlyapp
         void sustain(void);
 
         /**
+           @brief Output GPIO patther - One pulse for user set time.
+         */
+        void outputPattern(void);
+
+        /**
           @brief GPIO export path.
           @return Corresponding GPIO export path.
          */
@@ -108,4 +113,26 @@ namespace earlyapp
         */
         GPIOControl(void) { };
     };
+
+    /**
+       @brief GPIOControl C interfaces - Create.
+       @param gpioNumber GPIO number to be controlled.
+       @param peakSustainTime Time in ms GPIO staying at HIGH status.
+     */
+    extern "C" void* GPIOControl_create(
+        int gpioNumber,
+        unsigned int peakSustainTime = Configuration::DEFAULT_GPIOSUSTAIN);
+
+    /**
+       @brief GPIOControl C interfaces - Release resource.
+       @param pGPIOClass A pointer for a GPIOControl.
+     */
+    extern "C" void GPIOControl_release(void* pGPIOClass);
+
+    /**
+       @brief GPIOControl C interfaces - GPIO output pattern.
+       @param pGPIOClass A pointer for a GPIOControl.
+     */
+    extern "C" void GPIOControl_outputPattern(void* pGPIOClass);
+
 } // namespace

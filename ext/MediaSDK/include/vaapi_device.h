@@ -17,53 +17,16 @@ The original version of this sample may be obtained from https://software.intel.
 or https://software.intel.com/en-us/media-client-solutions-support.
 \**********************************************************************************/
 
+#ifndef __VAAPI_DEVICE_H__
+#define __VAAPI_DEVICE_H__
 
 #include "hw_device.h"
 #include "vaapi_utils_drm.h"
-
-
-CHWDevice* CreateVAAPIDevice(void);
-
-/** VAAPI DRM implementation. */
-class CVAAPIDeviceDRM : public CHWDevice
-{
-public:
-    CVAAPIDeviceDRM(int type);
-    virtual ~CVAAPIDeviceDRM(void);
-
-    virtual mfxStatus Init(mfxHDL hWindow, mfxU16 nViews, mfxU32 nAdapterNum);
-    virtual mfxStatus Reset(void) { return MFX_ERR_NONE; }
-    virtual void Close(void) { }
-
-    virtual mfxStatus SetHandle(mfxHandleType type, mfxHDL hdl) { return MFX_ERR_UNSUPPORTED; }
-    virtual mfxStatus GetHandle(mfxHandleType type, mfxHDL *pHdl)
-    {
-        if ((MFX_HANDLE_VA_DISPLAY == type) && (NULL != pHdl))
-        {
-            *pHdl = m_DRMLibVA.GetVADisplay();
-
-            return MFX_ERR_NONE;
-        }
-        return MFX_ERR_UNSUPPORTED;
-    }
-
-    virtual mfxStatus RenderFrame(mfxFrameSurface1 * pSurface, mfxFrameAllocator * pmfxAlloc);
-    virtual void      UpdateTitle(double fps) { }
-    virtual void      SetMondelloInput(bool isMondelloInputEnabled) { }
-
-    inline drmRenderer* getRenderer() { return m_rndr; }
-protected:
-    DRMLibVA m_DRMLibVA;
-    drmRenderer * m_rndr;
-private:
-    // no copies allowed
-    CVAAPIDeviceDRM(const CVAAPIDeviceDRM &);
-    void operator=(const CVAAPIDeviceDRM &);
-};
+#include "GPIOControl.hpp"
 
 
 
-
+CHWDevice* CreateVAAPIDevice(earlyapp::GPIOControl* pGPIO=nullptr);
 class Wayland;
 
 #define HANDLE_WAYLAND_DRIVER   (MFX_HANDLE_VA_DISPLAY << 4)
@@ -71,13 +34,15 @@ class Wayland;
 class CVAAPIDeviceWayland : public CHWDevice
 {
 public:
-    CVAAPIDeviceWayland(){
+    CVAAPIDeviceWayland(earlyapp::GPIOControl* pGPIO=nullptr){
         m_nRenderWinX = 0;
         m_nRenderWinY = 0;
         m_nRenderWinW = 0;
         m_nRenderWinH = 0;
         m_isMondelloInputEnabled = false;
         m_Wayland = NULL;
+        m_pGPIOCtrl = pGPIO;
+        m_bGotFirstFrame = false;
     }
     virtual ~CVAAPIDeviceWayland(void);
 
@@ -116,8 +81,13 @@ private:
 
     bool m_isMondelloInputEnabled;
 
+    // Measure KPI number for the first frame.
+    bool m_bGotFirstFrame = false;
+    earlyapp::GPIOControl* m_pGPIOCtrl = nullptr;
+
     // no copies allowed
     CVAAPIDeviceWayland(const CVAAPIDeviceWayland &);
-    void operator=(const CVAAPIDeviceWayland &);
+    void operator=(const CVAAPIDeviceWayland &);    
 };
 
+#endif //__VAAPI_DEVICE_H__

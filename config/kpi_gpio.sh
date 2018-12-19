@@ -16,5 +16,8 @@ else
 	echo "GPIO already exported"
 fi
 
-echo "Set value as high"
-echo $2 > $GPIODIR/value
+if [ ! -z $2 ]
+then
+	echo "Set value as $2"
+	echo $2 > $GPIODIR/value
+fi

@@ -40,6 +40,9 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 
 #include "plugin_loader.h"
 #include "general_allocator.h"
+#include "vaapi_device.h"
+
+#include "GPIOControl.hpp"
 
 #ifndef MFX_VERSION
 #error MFX_VERSION not defined
@@ -63,6 +66,7 @@ enum eDecoderPostProc {
   MODE_DECODER_POSTPROC_FORCE = 0x2
 };
 #endif //MFX_VERSION >= 1022
+
 
 struct sInputParams
 {
@@ -161,7 +165,7 @@ class CDecodingPipeline:
     public CPipelineStatistics
 {
 public:
-    CDecodingPipeline();
+    CDecodingPipeline(earlyapp::GPIOControl* pGPIO=nullptr);
     virtual ~CDecodingPipeline();
 
     virtual mfxStatus Init(sInputParams *pParams);
@@ -215,7 +219,7 @@ protected: // functions
     virtual bool IsVppRequired(sInputParams *pParams);
 
     virtual mfxStatus CreateAllocator();
-    virtual mfxStatus CreateHWDevice();
+    virtual mfxStatus CreateHWDevice(earlyapp::GPIOControl* pGPIOCtrl=nullptr);
     virtual mfxStatus AllocFrames();
     virtual void DeleteFrames();
     virtual void DeleteAllocator();
@@ -309,9 +313,6 @@ protected: // variables
     std::vector<mfxExtBuffer*> m_VppSurfaceExtParams;
 
     CHWDevice               *m_hwdev;
-#if D3D_SURFACES_SUPPORT
-    CDecodeD3DRender         m_d3dRender;
-#endif
 
     bool                    m_bRenderWin;
     mfxU32                  m_nRenderWinX;
@@ -327,7 +328,11 @@ protected: // variables
     bool                    m_bResetFileReader;
 private:
     CDecodingPipeline(const CDecodingPipeline&);
+
     void operator=(const CDecodingPipeline&);
+
+    // GPIO control.
+    earlyapp::GPIOControl* m_pGPIOCtrl = nullptr;
 };
 
 #endif // __PIPELINE_DECODE_H__

@@ -119,6 +119,14 @@ namespace earlyapp
         usleep(m_SustainTime);
     }
 
+    // GPIO Output Pattern.
+    void GPIOControl::outputPattern(void)
+    {
+        output(HIGH);
+        sustain();
+        output(LOW);
+    }
+
     // GPIO export path.
     std::shared_ptr<std::string> GPIOControl::exportPath(void) const
     {
@@ -148,5 +156,33 @@ namespace earlyapp
         ss << "/value";
         std::shared_ptr<std::string> r(new std::string(ss.str()));
         return r;
+    }
+
+    /**
+       C interfaces.
+     */
+
+    // Create GPIO control.
+    void* GPIOControl_create(int gpioNumber, unsigned int peakSustainTime)
+    {
+        return new GPIOControl(gpioNumber, peakSustainTime);
+    }
+
+    // Release GPOI control.
+    void GPIOControl_release(void* pGPIOClass)
+    {
+        if(pGPIOClass != NULL)
+        {
+            delete static_cast<GPIOControl*>(pGPIOClass);
+        }
+    }
+
+    // Output GPIO pattern.
+    void GPIOControl_outputPattern(void* pGPIOClass)
+    {
+        if(pGPIOClass != NULL)
+        {
+            static_cast<GPIOControl*>(pGPIOClass)->outputPattern();
+        }
     }
 } // namespace

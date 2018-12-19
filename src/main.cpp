@@ -42,9 +42,7 @@
 #include "DeviceController.hpp"
 #include "Configuration.hpp"
 
-#ifdef USE_GSTREAMER
 #include "GStreamerApp.hpp"
-#endif
 
 // A log tag for main.
 #define TAG "MAIN"
@@ -96,12 +94,14 @@ int main(int argc, char* argv[])
     }
 
 
-#ifdef USE_GSTREAMER
     /*
       GStreamer.
      */
-    gst_init(&argc, &argv);
-#endif
+    if(pConf->useGStreamer())
+    {
+        gst_init(&argc, &argv);
+    }
+
 
     /*
       Event threading.

@@ -37,15 +37,13 @@
 #include "SystemStatusTracker.hpp"
 #include "OutputDevice.hpp"
 
-#ifdef USE_GSTREAMER
-#include "GstAudioDevice.hpp"
-#include "GstVideoDevice.hpp"
-#include "GstCameraDevice.hpp"
-#else
 #include "AudioDevice.hpp"
 #include "VideoDevice.hpp"
 #include "CameraDevice.hpp"
-#endif
+
+#include "GstAudioDevice.hpp"
+#include "GstVideoDevice.hpp"
+#include "GstCameraDevice.hpp"
 
 
 // A tag for DeviceController.
@@ -54,8 +52,14 @@
 namespace earlyapp
 {
     /*
-      Constructor.
+      Constructors.
      */
+    DeviceController::DeviceController(void)
+        :m_pConf(nullptr),
+         m_pSST(nullptr)
+    {
+    }
+
     DeviceController::DeviceController(std::shared_ptr<Configuration> pConf, SystemStatusTracker* pSST)
     {
         m_pConf = pConf;
@@ -73,34 +77,48 @@ namespace earlyapp
         }
 
         // Register audio, video, camera devices.
-#ifdef USE_GSTREAMER
-        m_pAud =
-            (pAud == nullptr) ? GstAudioDevice::getInstance():pAud;
-        m_pVid =
-            (pVid == nullptr) ? GstVideoDevice::getInstance():pVid;
-        m_pCam =
-            (pCam == nullptr) ? GstCameraDevice::getInstance():pCam;
-#else
-        m_pAud =
-            (pAud == nullptr) ? AudioDevice::getInstance():pAud;
-        m_pVid =
-            (pVid == nullptr) ? VideoDevice::getInstance():pVid;
-        m_pCam =
-            (pCam == nullptr) ? CameraDevice::getInstance():pCam;
-#endif
+        if(m_pConf->useGStreamer())
+        {
+            m_pAud = (pAud == nullptr) ?
+                GstAudioDevice::getInstance() : pAud;
+            m_pVid = (pVid == nullptr) ?
+                GstVideoDevice::getInstance() : pVid;
+            m_pCam = (pVid == nullptr) ?
+                GstCameraDevice::getInstance() : pCam;
+        }
+        else
+        {
+            m_pAud = (pAud == nullptr) ?
+                AudioDevice::getInstance():pAud;
+            m_pVid = (pVid == nullptr) ?
+                VideoDevice::getInstance():pVid;
+            m_pCam = (pCam == nullptr) ?
+                CameraDevice::getInstance():pCam;
+        }
 
         addDevice(m_pAud);
         addDevice(m_pVid);
         addDevice(m_pCam);
 
+#ifdef USE_DMESGLOG
+        dmesgLogPrint("EA: Waiting for Wayland socket...");
+#endif
         // Wait for the Wayland.
         waitForWayland();
+#ifdef USE_DMESGLOG
+        dmesgLogPrint("EA: Got Wayland compositor socket.");
+#endif
 
         // Initalize devices.
         for(auto& it: m_Devs)
         {
+            LINF_(TAG, it->deviceName());
             it->init(m_pConf);
         }
+
+#ifdef USE_DMESGLOG
+        dmesgLogPrint("EA: Devices initialized");
+#endif
         m_bInit = true;
     }
 

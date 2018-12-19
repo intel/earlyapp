@@ -75,7 +75,7 @@ namespace earlyapp
     {
         OutputDevice::init(pConf);
 
-        m_pDecPipeline = new CDecodingPipeline();
+        m_pDecPipeline = new CDecodingPipeline(m_pGPIOCtrl);
         if(m_pDecPipeline == nullptr)
         {
             LERR_(TAG, "Failed to create decoder instance.");
@@ -114,7 +114,6 @@ namespace earlyapp
     void VideoDevice::play(void)
     {
         LINF_(TAG, "VideoDevice play");
-        OutputDevice::outputGPIOPattern();
 
         // Start decoding and display.
         m_pDecPipeline->RunDecoding();

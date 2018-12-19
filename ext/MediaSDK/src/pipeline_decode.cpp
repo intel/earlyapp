@@ -33,7 +33,7 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "class_wayland.h"
 
 #include "version.h"
-
+#include "GPIOControl.hpp"
 #pragma warning(disable : 4100)
 
 #define __SYNC_WA // avoid sync issue on Media SDK side
@@ -123,8 +123,11 @@ const mfxPluginUID & msdkGetPluginUID(mfxIMPL impl, msdkComponentType type, mfxU
 }
 
 
-CDecodingPipeline::CDecodingPipeline()
+CDecodingPipeline::CDecodingPipeline(earlyapp::GPIOControl* pGPIOCtrl)
 {
+    // GPIO control to measure KPI.
+    m_pGPIOCtrl = pGPIOCtrl;
+
     m_nFrames=0;
     m_export_mode=0;
     m_bVppFullColorRange=false;
@@ -206,8 +209,6 @@ CDecodingPipeline::CDecodingPipeline()
     m_DecodeErrorReport.Header.BufferId = MFX_EXTBUFF_DECODE_ERROR_REPORT;
 #endif
 
-    m_hwdev = NULL;
-
     m_bOutI420 = false;
 
     m_export_mode = vaapiAllocatorParams::DONOT_EXPORT;
@@ -286,6 +287,8 @@ mfxStatus CDecodingPipeline::Init(sInputParams *pParams)
 
     m_nMaxFps = pParams->nMaxFPS;
     m_nFrames = pParams->nFrames ? pParams->nFrames : MFX_INFINITE;
+
+    m_hwdev = NULL;
 
     m_bOutI420 = pParams->outI420;
 
@@ -412,48 +415,6 @@ mfxStatus CDecodingPipeline::Init(sInputParams *pParams)
     // prepare bit stream
     sts = InitMfxBitstream(&m_mfxBS, 8 * 1024 * 1024);
     MSDK_CHECK_STATUS(sts, "InitMfxBitstream failed");
-
-    if (CheckVersion(&version, MSDK_FEATURE_PLUGIN_API)) {
-        /* Here we actually define the following codec initialization scheme:
-        *  1. If plugin path or guid is specified: we load user-defined plugin (example: VP8 sample decoder plugin)
-        *  2. If plugin path not specified:
-        *    2.a) we check if codec is distributed as a mediasdk plugin and load it if yes
-        *    2.b) if codec is not in the list of mediasdk plugins, we assume, that it is supported inside mediasdk library
-        */
-        // Load user plug-in, should go after CreateAllocator function (when all callbacks were initialized)
-        if (pParams->pluginParams.type == MFX_PLUGINLOAD_TYPE_FILE && msdk_strnlen(pParams->pluginParams.strPluginPath,sizeof(pParams->pluginParams.strPluginPath)))
-        {
-            m_pUserModule.reset(new MFXVideoUSER(m_mfxSession));
-            if (pParams->videoType == MFX_CODEC_HEVC || pParams->videoType == MFX_CODEC_VP8 ||
-                pParams->videoType == MFX_CODEC_VP9)
-            {
-                m_pPlugin.reset(LoadPlugin(MFX_PLUGINTYPE_VIDEO_DECODE, m_mfxSession, pParams->pluginParams.pluginGuid, 1, pParams->pluginParams.strPluginPath, (mfxU32)msdk_strnlen(pParams->pluginParams.strPluginPath,sizeof(pParams->pluginParams.strPluginPath))));
-            }
-            if (m_pPlugin.get() == NULL) sts = MFX_ERR_UNSUPPORTED;
-        }
-        else
-        {
-            bool isDefaultPlugin = false;
-            if (AreGuidsEqual(pParams->pluginParams.pluginGuid, MSDK_PLUGINGUID_NULL))
-            {
-                mfxIMPL impl = pParams->bUseHWLib ? MFX_IMPL_HARDWARE : MFX_IMPL_SOFTWARE;
-                pParams->pluginParams.pluginGuid = msdkGetPluginUID(impl, MSDK_VDECODE, pParams->videoType);
-                isDefaultPlugin = true;
-            }
-            if (!AreGuidsEqual(pParams->pluginParams.pluginGuid, MSDK_PLUGINGUID_NULL))
-            {
-                m_pPlugin.reset(LoadPlugin(MFX_PLUGINTYPE_VIDEO_DECODE, m_mfxSession, pParams->pluginParams.pluginGuid, 1));
-                if (m_pPlugin.get() == NULL) sts = MFX_ERR_UNSUPPORTED;
-            }
-            if(sts==MFX_ERR_UNSUPPORTED)
-            {
-                msdk_printf(isDefaultPlugin ?
-                    MSDK_STRING("Default plugin cannot be loaded (possibly you have to define plugin explicitly)\n")
-                    : MSDK_STRING("Explicitly specified plugin cannot be loaded.\n"));
-            }
-        }
-        MSDK_CHECK_STATUS(sts, "Plugin load failed");
-    }
 
     // Populate parameters. Involves DecodeHeader call
     sts = InitMfxParams(pParams);
@@ -952,10 +913,10 @@ mfxStatus CDecodingPipeline::InitVppParams()
     return MFX_ERR_NONE;
 }
 
-mfxStatus CDecodingPipeline::CreateHWDevice()
+mfxStatus CDecodingPipeline::CreateHWDevice(earlyapp::GPIOControl* pGPIOCtrl)
 {
     mfxStatus sts = MFX_ERR_NONE;
-    m_hwdev = CreateVAAPIDevice();
+    m_hwdev = CreateVAAPIDevice(pGPIOCtrl);
 
     if (NULL == m_hwdev) {
         return MFX_ERR_MEMORY_ALLOC;
@@ -1168,7 +1129,7 @@ mfxStatus CDecodingPipeline::CreateAllocator()
     m_pGeneralAllocator = new GeneralAllocator();
     if (m_memType != SYSTEM_MEMORY || !m_bDecOutSysmem)
     {
-        sts = CreateHWDevice();
+        sts = CreateHWDevice(m_pGPIOCtrl);
         MSDK_CHECK_STATUS(sts, "CreateHWDevice failed");
         /* It's possible to skip failed result here and switch to SW implementation,
            but we don't process this way */
@@ -1496,7 +1457,7 @@ void CDecodingPipeline::PrintPerFrameStat(bool force)
             (fps_fread < MY_THRESHOLD)? fps_fread: 0.0,
             (fps_fwrite < MY_THRESHOLD)? fps_fwrite: 0.0);
         fflush(NULL);
-        if (m_hwdev) m_hwdev->UpdateTitle(fps);
+        m_hwdev->UpdateTitle(fps);
     }
 }
 

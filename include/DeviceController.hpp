@@ -48,6 +48,13 @@ namespace earlyapp
            @param pConf User set configuration.
            @param pSST System status tracker.
         */
+        DeviceController(void);
+
+        /**
+           @brief Constructor.
+           @param pConf User set configuration.
+           @param pSST System status tracker.
+        */
         DeviceController(std::shared_ptr<Configuration> pConf, SystemStatusTracker* pSST);
 
         /**
@@ -56,7 +63,7 @@ namespace earlyapp
            @param pVid Video device instance.
            @param pCam Camera device instance.
         */
-        void init(
+        virtual void init(
             OutputDevice* pAud=nullptr,
             OutputDevice* pVid=nullptr,
             OutputDevice* pCam=nullptr);

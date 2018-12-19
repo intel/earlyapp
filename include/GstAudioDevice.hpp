@@ -87,7 +87,7 @@ namespace earlyapp
 
     private:
         // Hide the default constructor to prevent instancitating.
-        GstAudioDevice(void) { }
+        GstAudioDevice(void) { m_pDevName = "Gst Audio"; }
 
         // Program configuration.
         std::shared_ptr<Configuration> m_pConf;

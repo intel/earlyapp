@@ -4,6 +4,8 @@ DefaultDependencies=no
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+Slice=earlyapp.slice
+
+# Set permissions on DRM device node
 ExecStart=/usr/bin/chown :video /dev/dri/card0
 ExecStart=/usr/bin/chmod g+rw /dev/dri/card0
-Slice=earlyapp.slice

@@ -55,116 +55,7 @@ int pixelformat;
 
 int stream_id=-1;
 
-/* interrupt signal handling */
-static void signal_int(int signum)
-{
-	running = 0;
-}
-
-static void usage(char *name)
-{
-	fprintf(stderr, "usage: %s [-hidobc]\n", name);
-
-	fprintf(stderr, "\nCapture options:\n\n");
-	fprintf(stderr, "\t-d input: cvbs, hdmi, tpg, ovti(OV10635+TI964)\n");
-	fprintf(stderr, "\t-b buffer type: dma, ptr\n");
-	fprintf(stderr, "\t-h show this help\n");
-	fprintf(stderr, "\t-o <width,height>\tset output resolution\n");
-	fprintf(stderr, "\t-i enable interlacing\n");
-	fprintf(stderr, "\t-c color format: RGB888, RGB565, UYVY \n");
-	fprintf(stderr, "\t-s %s device number. Default is %d\n", ICI_STREAM_DEVICE_NAME, DEFAULT_STREAM_ID);
-	fprintf(stderr, "\t-r <widthxheight>\tisys input resolution\n");
-}
-
-
-static int parse_args(int argc, char *argv[], struct setup *s)
-{
-	int c, ret;
-	s->mem_type = ICI_MEM_USERPTR;
-	pixelformat = 0;
-	while((c = getopt(argc, argv, "hd:io:b:c:s:r:")) != -1) {
-		switch (c) {
-			case '?':
-			case 'h':
-				usage(argv[0]);
-				exit(0);
-			case 'd':
-				if (WARN_ON((strlen(optarg) != 4) &&
-						   	(strlen(optarg) != 3), "invalid input\n"))
-					return -1;
-
-				if (strncmp(optarg, "hdmi", 4) == 0) {
-					s->stream_input = HDMI_INPUT;
-				} else if (strncmp(optarg, "cvbs", 4) == 0) {
-					s->stream_input = CVBS_INPUT;
-				} else if (strncmp(optarg, "tpg", 3) == 0) {
-					s->stream_input = TPG_INPUT;
-				} else if (strncmp(optarg, "ovti", 4) == 0) {
-					s->stream_input = OVTI_INPUT;
-				} else {
-					WARN_ON(1, "invalid input\n");
-					return -1;
-				}
-				break;
-			case 'i':
-				s->interlaced = 1;
-				printf("***INTERLACING**** \n");
-				break;
-			case 'o':
-				ret = sscanf(optarg, "%u,%u", &s->ow, &s->oh);
-				if (WARN_ON(ret != 2, "incorrect output size\n"))
-					return -1;
-				break;
-			case 'r':
-				ret = sscanf(optarg, "%ux%u", &s->isys_w, &s->isys_h);
-				if (WARN_ON(ret != 2, "incorrect output size\n"))
-					return -1;
-				break;
-			case 'c':
-				if (strncmp(optarg, "RGB888", 6) == 0) {
-					pixelformat = ICI_FORMAT_RGB888;
-				}
-				else
-				if (strncmp(optarg, "RGB565", 6) == 0) {
-					pixelformat = ICI_FORMAT_RGB565;
-				}
-				else
-				if (strncmp(optarg, "UYVY", 4) == 0) {
-					pixelformat = ICI_FORMAT_UYVY;
-				}
-				else {
-					WARN_ON(1, "wrong pixelformat!\n");
-					return -1;
-				}
-				break;
-			case 'b':
-				if (WARN_ON(strlen(optarg) != 3, "invalid input\n"))
-					return -1;
-
-				if (strncmp(optarg, "dma", 3) == 0) {
-					printf("DMA Selected \n");
-					s->mem_type = ICI_MEM_DMABUF;
-				} else if (strncmp(optarg, "ptr", 3) == 0) {
-					printf("User PTR  Selected \n");
-					s->mem_type = ICI_MEM_USERPTR;
-				} else {
-					WARN_ON(1, "invalid input\n");
-				}
-				break;
-			case 's':
-				stream_id = atoi(optarg);
-				if(stream_id < 0) {
-					printf("stream must be larger or equal to 0\n");
-					return -1;
-				}
-				break;
-		}
-	}
-
-	if (WARN_ON(!s->stream_input, "No input specified!\n"))
-					return -1;
-	return 0;
-}
+struct wl_display *g_display_connection = NULL;
 
 static void polling_thread(void *data)
 {
@@ -191,7 +82,10 @@ static void polling_thread(void *data)
 						&is_topbuf);
 
 				if(buf_idx > display->s->buffer_count || buf_idx < 0)
-					BYE_ON(1, "Failed to Deque Buffer\n");
+				{
+					fprintf(stderr,"Failed to Deque Buffer\n");
+					break;
+				}
 
 				display->buffers[buf_idx].is_top = is_topbuf;
 				if(display->s->interlaced){
@@ -211,7 +105,6 @@ static void polling_thread(void *data)
 				}
 				queue_buffer(fd.fd, &display->buffers[buf_idx],
 						display->s->mem_type);
-
 				if (first_frame_received == 0) {
 					first_frame_received = 1;
 					GET_TS(time_measurements.first_frame_time);
@@ -315,12 +208,32 @@ void format_setup(struct setup *s)
 	s->in_fourcc = stream_fmt.ffmt.pixelformat;
 }
 
-int iciStartDisplay(struct setup param, int io_stream_id, int start)
+int initWlConnection(void)
+{
+	if(g_display_connection == NULL)
+	{
+		g_display_connection = wl_display_connect(NULL);
+		fprintf(stderr,"wayland connection\n");
+	}
+	return 0;
+}
+
+int disconnectWlConnection(void)
+{
+	if(g_display_connection != NULL)
+	{
+		wl_display_disconnect(g_display_connection);
+		g_display_connection = NULL;
+		fprintf(stderr,"disconnect wayland connection\n");
+	}
+	return 0;
+}
+
+int iciStartDisplay(struct setup param, int io_stream_id, int start, void *gpioclass)
 {
 	GET_TS(time_measurements.app_start_time);
 
 	struct setup s = param;
-	struct sigaction sigint;
 	struct display display = { 0 };
 	struct window  window  = { 0 };
 	int ret = 0;
@@ -330,20 +243,23 @@ int iciStartDisplay(struct setup param, int io_stream_id, int start)
 	unsigned long buf_size = 0;
 	int dev_fd;
 
-	//ret = parse_args(argc, argv, &s);
-	//BYE_ON(ret, "failed to parse arguments\n");
 	stream_id = io_stream_id;
 	format_setup(&s);
 
 	/* open the device */
 	dev_fd = open_device(s.stream);
-	BYE_ON(dev_fd == -1, "Failed to open device");
+	if(dev_fd == -1)
+	{
+		fprintf(stderr,"Failed to open device");
+		return 0;
+	}
 
 	/* Do any specific intilization */
 	ret = init_stream(dev_fd);
 	if(ret) {
 		close_device(dev_fd);
-		BYE_ON(ret, "Stream Init Failed\n");
+		fprintf(stderr,"Stream Init Failed\n");
+		return 0;
 	}
 
     s.stride_width = stream_fmt.pfmt.plane_fmt[0].bytesperline /
@@ -394,7 +310,7 @@ int iciStartDisplay(struct setup param, int io_stream_id, int start)
 
 	GET_TS(time_measurements.weston_init_time);
 
-	display.display = wl_display_connect(NULL);
+	display.display = g_display_connection;
 	assert(display.display);
 	wl_list_init(&display.output_list);
 
@@ -406,16 +322,10 @@ int iciStartDisplay(struct setup param, int io_stream_id, int start)
 	wl_display_roundtrip(display.display);
 
 	init_egl(&display, window.opaque);
-	create_surface(&window);
+	create_surface(&window, gpioclass);
 	init_gl(&window);
 
 	GET_TS(time_measurements.rendering_init_time);
-
-	/* Connecting SIGINT handling routine */
-	sigint.sa_handler = signal_int;
-	sigemptyset(&sigint.sa_mask);
-	sigint.sa_flags = SA_RESETHAND;
-	sigaction(SIGINT, &sigint, NULL);
 
 	prev_time = calloc(1, sizeof(struct timeval));
 	if(!prev_time) {
@@ -430,7 +340,6 @@ int iciStartDisplay(struct setup param, int io_stream_id, int start)
 	}
 
 	gettimeofday(prev_time, NULL);
-
 
 	/* Main display loop */
 
@@ -465,7 +374,6 @@ cleanup0:
 	wl_compositor_destroy(display.compositor);
 
 	wl_display_flush(display.display);
-	wl_display_disconnect(display.display);
 
 	return 0;
 }

@@ -55,6 +55,7 @@ namespace earlyapp
     const unsigned int Configuration::DEFAULT_DISPLAY_HEIGHT = DONT_CARE;
     const int Configuration::DEFAULT_GPIONUMBER = NOT_SET;
     const unsigned int Configuration::DEFAULT_GPIOSUSTAIN = 1;
+    const bool Configuration::DEFAULT_USE_GSTREAMER = false;
 
 
     // Configuration keys.
@@ -68,6 +69,7 @@ namespace earlyapp
     const char* Configuration::KEY_DISPLAYHEIGHT = "height";
     const char* Configuration::KEY_GPIONUMBER = "gpio-number";
     const char* Configuration::KEY_GPIOSUSTAIN = "gpio-sustain";
+    const char* Configuration::KEY_USEGSTREAMER = "use-gstreamer";
 
 
 
@@ -192,6 +194,13 @@ namespace earlyapp
         return peakSustain;
     }
 
+    // Use GStreamer
+    bool Configuration::useGStreamer(void) const
+    {
+        unsigned int useGStreamer = m_VM[Configuration::KEY_USEGSTREAMER].as<bool>();
+        return useGStreamer;
+    }
+
     // Destructor.
     Configuration::~Configuration(void)
     {
@@ -211,19 +220,17 @@ namespace earlyapp
 
             m_pDesc->add_options()
                 // Help.
-                ("help", "Print usages")
+                ("help", "Print usages.")
 
                 // Version.
-                ("version,v", "Print version number")
-/*
-  Camera source option is supported with GStreamer.
- */
-#ifdef USE_GSTREAMER
+                ("version,v", "Print version number.")
+
                 // Camera input source.
+                // NOTE: Camera source option is supported with GStreamer.
                 ("camera-input,c",
                  boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_CAMERA_INPUTSOURCE)->notifier(&checkCameraParameter),
-                 "Camera input source.")
-#endif
+                 "Camera input source selection, only supported with use-gstreamer option.")
+
                 // Splash video.
                 ("splash-video,s",
                  boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_VIDEO_SPLASH_PATH),
@@ -267,7 +274,12 @@ namespace earlyapp
                 // GPIO sustaining time.
                 (Configuration::KEY_GPIOSUSTAIN,
                  boost::program_options::value<unsigned int>()->default_value(Configuration::DEFAULT_GPIOSUSTAIN),
-                 "GPIO sustaining time in ms for KPI measurements.");
+                 "GPIO sustaining time in ms for KPI measurements.")
+
+                // Use GStreamer
+                (Configuration::KEY_USEGSTREAMER,
+                 boost::program_options::bool_switch()->default_value(Configuration::DEFAULT_USE_GSTREAMER),
+                 "Use GStreamer for auido, camera and video.");
 
 
             boost::program_options::store(

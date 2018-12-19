@@ -28,10 +28,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 PROJECT("earlyapp")
 SET(PROJECT_VERSION_MAJOR 0)
 SET(PROJECT_VERSION_MINOR 9)
-SET(PROJECT_VERSION_PATCH 13)
+SET(PROJECT_VERSION_PATCH 16)
 
 # Version file.
 CONFIGURE_FILE("version.h.in" ${CMAKE_BINARY_DIR}/include/EAVersion.h)
+
+# Program executable.
+SET(PROGRAM_EXE ${CMAKE_PROJECT_NAME})
 
 
 # [Features]
@@ -47,21 +50,11 @@ IF(USE_DMESGLOG)
     ADD_DEFINITIONS(-DUSE_DMESGLOG)
 ENDIF(USE_DMESGLOG)
 
-#  - GStreamer
-OPTION(USE_GSTREAMER "Use GStreamer for audio, camera and video" OFF)
-IF(USE_GSTREAMER)
-    ADD_DEFINITIONS(-DUSE_GSTREAMER)
-ENDIF(USE_GSTREAMER)
 
-
-# Program executable.
-SET(PROGRAM_EXE ${CMAKE_PROJECT_NAME})
 SUBDIRS(ext/MediaSDK/src ext/CameraICI/src src)
-
 
 # Service configuration
 SUBDIRS(config)
-
 
 # Resources files
 SUBDIRS(res)

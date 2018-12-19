@@ -80,7 +80,7 @@ namespace earlyapp
         /**
            @brief Default constructor hidden in preivate to prevent instancitation.
         */
-        GstCameraDevice(void) { }
+        GstCameraDevice(void) { OutputDevice::m_pDevName = "Gst Camera"; }
 
         /**
            @brief Camear device instance.

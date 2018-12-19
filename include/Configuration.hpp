@@ -58,6 +58,7 @@ namespace earlyapp
         static const unsigned int DEFAULT_DISPLAY_HEIGHT;
         static const int DEFAULT_GPIONUMBER;
         static const useconds_t DEFAULT_GPIOSUSTAIN;
+        static const bool DEFAULT_USE_GSTREAMER;
 
 
         /*
@@ -73,6 +74,8 @@ namespace earlyapp
         static const char* KEY_DISPLAYHEIGHT;
         static const char* KEY_GPIONUMBER;
         static const char* KEY_GPIOSUSTAIN;
+        static const char* KEY_USEGSTREAMER;
+
 
         /**
            @brief Constructor.
@@ -154,6 +157,11 @@ namespace earlyapp
           @brief Returns GPIO peak sustaining time in ms.
          */
         unsigned int gpioSustain(void) const;
+
+        /**
+           @brief Returns whether user asked to use GStreamer.
+        */
+        bool useGStreamer(void) const;
 
         /**
            @brief Disable copy assigned operators.

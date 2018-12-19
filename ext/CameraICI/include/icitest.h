@@ -35,7 +35,10 @@ typedef unsigned char __u8;
 #include "ici.h"
 #include "icitest_common.h"
 
-int iciStartDisplay(struct setup, int, int);
+int iciStartDisplay(struct setup, int, int, void*);
 void iciStopDisplay(int);
+
+int initWlConnection(void);
+int disconnectWlConnection(void);
 
 #endif

@@ -106,6 +106,15 @@ namespace earlyapp
         m_iciParam.stream_input = CVBS_INPUT;
         m_iciParam.mem_type = ICI_MEM_DMABUF;
         m_stream_id = 27;
+
+        initWlConnection();
+
+        /* gpio creation */
+        if(m_pConf->gpioNumber() != m_pConf->NOT_SET)
+        {
+            m_pGPIOClass = GPIOControl_create(m_pConf->gpioNumber(), m_pConf->gpioSustain());
+        }
+
         LINF_(TAG, "Camerea intialized.");
     }
 
@@ -121,8 +130,7 @@ namespace earlyapp
                 m_pThreadGrpRVC = new(boost::thread_group);
                 m_pThreadRVC = m_pThreadGrpRVC->create_thread(
                     boost::bind(
-                        &displayCamera, m_iciParam, m_stream_id));
-            OutputDevice::outputGPIOPattern();
+                        &displayCamera, m_iciParam, m_stream_id, m_pGPIOClass));
         }
         else
         {
@@ -158,13 +166,18 @@ namespace earlyapp
     void CameraDevice::terminate(void)
     {
         LINF_(TAG, "CameraDevice terminate");
+        if(m_pGPIOClass)
+        {
+            GPIOControl_release(m_pGPIOClass);
+        }
+        disconnectWlConnection();
     }
 
-    void CameraDevice::displayCamera(setup m_iciParam, int stream_id)
+    void CameraDevice::displayCamera(setup m_iciParam, int stream_id, void *GPIOClass)
     {
         LINF_(TAG, "Display loop.");
 
-        iciStartDisplay(m_iciParam, stream_id, 1);
+        iciStartDisplay(m_iciParam, stream_id, 1, GPIOClass);
     }
 
 } // namespace

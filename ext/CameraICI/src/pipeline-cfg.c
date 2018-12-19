@@ -48,7 +48,6 @@
 #endif
 
 #define ARRAY_SIZE(array)	(sizeof(array) / sizeof((array)[0]))
-static const int print_pad_supported_formats = 0;
 static int fd = -1;
 
 static char* find_node_by_id(int node);
@@ -112,7 +111,6 @@ struct print_info field_info[] = {
 struct ici_node_desc* node_list = NULL;
 int nodes_num = 0;
 
-
 /*=====*/
 static void close_device(void)
 {
@@ -171,6 +169,7 @@ static int open_pipe_device(void)
 				dev_name, errno, strerror(errno));
 		return 0;
 	}
+	return 1;
 }
 
 static void print_pad_props(struct ici_pad_framefmt *props)
@@ -180,139 +179,6 @@ static void print_pad_props(struct ici_pad_framefmt *props)
 			find_enum_by_code(props->ffmt.pixelformat, fmt_list, ARRAY_SIZE(fmt_list)),
 			field_info[props->ffmt.field].name,
 			props->ffmt.colorspace, props->ffmt.flags);
-}
-
-static void print_pad_sel(struct ici_pad_selection *pad_sel)
-{
-	printf("\t \t selection: [%s] [%d, %d, %d, %d] \n",
-			sel_list[pad_sel->sel_type].name,
-			pad_sel->rect.left, pad_sel->rect.top,
-			pad_sel->rect.width, pad_sel->rect.height);
-
-}
-
-static void get_pad_format(int pipeline_fd, unsigned int node, unsigned int  pad)
-{
-	struct ici_pad_framefmt ffmt = {0,
-			.pad = {
-				.node_id = node,
-				.pad_idx = pad
-				},
-			};
-
-	if (xioctl(pipeline_fd, ICI_IOC_GET_FRAMEFMT,
-			&ffmt) < 0 ) {
-		fprintf(stderr, "error on get format on node:%d pad_idx:%d\n",
-				node, pad);
-		return;
-	}
-
-	print_pad_props(&ffmt);
-}
-
-static void get_pad_selection(int pipeline_fd,
-		struct ici_pad_selection *pad_sel)
-{
-	printf("Node \"%s\" %d:%d:\n", find_node_by_id(pad_sel->pad.node_id),
-			pad_sel->pad.node_id, pad_sel->pad.pad_idx);
-	if (xioctl(pipeline_fd, ICI_IOC_GET_SELECTION,
-			pad_sel) < 0 ) {
-		fprintf(stderr, "error on get selection on node:%d pad_idx:%d\n",
-				pad_sel->pad.node_id, pad_sel->pad.pad_idx);
-		return;
-	}
-
-	print_pad_sel(pad_sel);
-}
-
-static void list_node(struct ici_node_desc *node_info)
-{
-	int p;
-	printf("Node-%d: %s  (%d pads)\n", node_info->node_id,
-			node_info->name, node_info->nr_pads);
-
-	for (p = 0; p < node_info->nr_pads; p++){
-		struct ici_pad_supported_format_desc format_desc = {0};
-		struct ici_links_query links_query = {0};
-		int f, ret;
-
-		links_query.pad.node_id = format_desc.pad.node_id = node_info->node_id;
-		links_query.pad.pad_idx = format_desc.pad.pad_idx = node_info->node_pad[p].pad_idx;
-
-		printf("\t pad%d:", node_info->node_pad[p].pad_idx);
-		if(node_info->node_pad[p].flags & ICI_PAD_FLAGS_SINK)
-			printf("(sink) ");
-		else if(node_info->node_pad[p].flags & ICI_PAD_FLAGS_SOURCE)
-			printf("(source) ");
-
-		if(node_info->node_pad[p].flags & ICI_PAD_FLAGS_MUST_CONNECT)
-			printf("(Must connect)");
-
-		printf("\n");
-
-		ret = xioctl(fd, ICI_IOC_ENUM_LINKS, &links_query);
-		if (ret < 0 ) {
-			fprintf(stderr, "error(%d) querying the links on"
-					"node:%d pad_idx:%d\n", ret,
-					node_info->node_id, node_info->node_pad[p].pad_idx);
-		}
-
-		printf("\t\t links: %d\n", links_query.links_cnt);
-		for (f = 0; f < links_query.links_cnt; f++ ){
-			if(links_query.links[f].flags & ICI_LINK_FLAG_BACKLINK) {
-				printf("\t\t\t - backlink to pad%d on node-%d (%s)",
-					links_query.links[f].source.pad_idx,
-					links_query.links[f].source.node_id,
-					find_node_by_id(links_query.links[f].source.node_id));
-				printf("\t (Backlink) ");
-			} else
-				printf("\t\t\t - link to pad%d on node-%d (%s)",
-					links_query.links[f].sink.pad_idx,
-					links_query.links[f].sink.node_id,
-					find_node_by_id(links_query.links[f].sink.node_id));
-
-			if(links_query.links[f].flags & ICI_LINK_FLAG_ENABLED)
-				printf(" (Enabled) ");
-			printf("\n");
-		}
-
-		if (print_pad_supported_formats){
-			char supported_formats_str[256];
-			char tmp[16];
-
-			supported_formats_str[0] = '\0';
-			format_desc.idx = 0;
-			while ( (ret = xioctl(fd,
-							ICI_IOC_GET_SUPPORTED_FRAMEFMT,
-							&format_desc) ) >= 0) {
-				if (format_desc.idx == 0)
-					strcat(supported_formats_str, "\t\t supported formats: ");
-				else
-					strcat(supported_formats_str, " , ");
-
-				sprintf(tmp, "%d", format_desc.color_format);
-				strcat(supported_formats_str, tmp);
-				format_desc.idx++;
-			}
-			printf("%s\n", supported_formats_str);
-		}
-
-		/* Get and print pad properties*/
-		get_pad_format(fd, node_info->node_id,
-				node_info->node_pad[p].pad_idx);
-	}
-
-}
-
-static void list_nodes(void)
-{
-	int i;
-	if(!node_list)
-		get_node_list();
-	printf("Device returned %d nodes.\n", nodes_num);
-
-	for (i=0; i < nodes_num; i++)
-		list_node(&node_list[i]);
 }
 
 static void reset_active_links(void)
@@ -394,29 +260,6 @@ static void set_pad_format(int pipeline_fd,
 #ifdef LOGPRINT
 	get_pad_format(pipeline_fd, pad_ffmt->pad.node_id,
 			pad_ffmt->pad.pad_idx);
-#endif
-}
-
-
-static void set_pad_selection(int pipeline_fd,
-		struct ici_pad_selection *pad_props)
-{
-	printf("\n Setting \"%s\" %d:%d: \n",
-			find_node_by_id(pad_props->pad.node_id),
-			pad_props->pad.node_id,
-			pad_props->pad.pad_idx);
-	print_pad_sel(pad_props);
-
-	if (xioctl(pipeline_fd, ICI_IOC_SET_SELECTION,
-			pad_props) < 0 ) {
-		fprintf(stderr, "error on set selection on node:%d pad_idx:%d\n",
-				pad_props->pad.node_id, pad_props->pad.pad_idx );
-		errno_exit("", errno);
-	}
-	printf("Selection set: \n");
-	print_pad_sel(pad_props);
-#ifdef LOGPRINT
-	get_pad_selection(pipeline_fd, pad_props);
 #endif
 }
 
@@ -559,20 +402,6 @@ int tokenize(char *str, char *delim, int expected, char **toks)
 	return num;
 }
 
-int get_node_id(const char *node_str)
-{
-	int node_id = -1;
-	if(isdigit(*node_str))
-		node_id = atoi(node_str);
-	else
-		node_id = find_node_by_name(node_str);
-
-	if(node_id < 0) {
-		errno_exit("Node not found! \n", EINVAL);
-	}
-	return node_id;
-}
-
 int get_pad_id(const char *pad_str)
 {
 	if(!isdigit(*pad_str)) {
@@ -581,33 +410,6 @@ int get_pad_id(const char *pad_str)
 		return atoi(pad_str);
 
 	return -1;
-}
-
-static void parse_sel_rect(char *rect_str,
-		struct ici_pad_selection *pad_sel)
-{
-	/*Get the rect string*/
-	int num = 4;
-	char *toks[num];
-	struct ici_rect *rect = &pad_sel->rect;
-
-	memset(toks,0,(sizeof(char*)*num));
-	if (tokenize(rect_str, ", ", num, toks) != num) {
-		errno_exit("Incomplete number of rect args \n", EINVAL);
-	}
-
-	if(!isdigit(*toks[0]) || !isdigit(*toks[1]) ||!isdigit(*toks[2]) ||
-			!isdigit(*toks[3])) {
-		errno_exit("Invalid arguments", EINVAL);
-	}
-
-	rect->left = atoi(toks[0]);
-	rect->top = atoi(toks[1]);
-	rect->width = strtoul(toks[2], NULL, 10);
-	rect->height = strtoul(toks[3], NULL, 10);
-
-	PRINT_DBG("Parse rect left:top:w:h %d:%d:%d:%d \n", rect->left,
-			rect->top, rect->width, rect->height);
 }
 
 static void parse_formats(char *ffmt_str,
@@ -664,6 +466,7 @@ static void get_arg_val(const char * src, const char *arg_name,
 	if(!pos) {
 		printf("%s' string not found\n", arg_name);
 		errno_exit("", EINVAL);
+		return;
 	}
 
 	PRINT_DBG("'%s' string found! \n", arg_name);
@@ -703,60 +506,6 @@ static void do_setformat(char *opt_arg)
 	if(open_pipe_device())
         {
             set_pad_format(fd, &pad_props);
-        }
-}
-
-static void parse_sel_arg(char *opt_arg,
-		struct ici_pad_selection *pad_sel, int parse_rect)
-{
-	char arg_val[250] = {0};
-
-	char *pos = strchr(opt_arg, '[');
-	char *type;
-
-	if(!pos) {
-		errno_exit("Invalid selection arguments \n", EINVAL);
-	}
-	/* Get and parse pad*/
-	strncpy(arg_val, opt_arg, pos - opt_arg);
-	parse_pad_desc(arg_val, &pad_sel->pad);
-
-	get_arg_val(opt_arg, "type:", ']', arg_val);
-	type = strtok(arg_val, " ");
-	if(!type) {
-		errno_exit("Invalid selection arguments \n", EINVAL);
-	}
-
-	if(isdigit(*type))
-		pad_sel->sel_type = atoi(type);
-	else
-		pad_sel->sel_type = find_enum_by_name(type, sel_list,
-			ARRAY_SIZE(sel_list));
-	if(parse_rect == 1) {
-		get_arg_val(opt_arg, "rect:", ']', arg_val);
-		parse_sel_rect(arg_val, pad_sel);
-	}
-}
-
-static void do_getselection(char *opt_arg)
-{
-	struct ici_pad_selection pad_sel = {0};
-	parse_sel_arg(opt_arg, &pad_sel, 0);
-
-	if(open_pipe_device())
-        {
-            get_pad_selection(fd, &pad_sel);
-        }
-}
-
-static void do_setselection(char *opt_arg)
-{
-	struct ici_pad_selection pad_sel = {0};
-	parse_sel_arg(opt_arg, &pad_sel, 1);
-
-	if(open_pipe_device())
-        {
-            set_pad_selection(fd, &pad_sel);
         }
 }
 
@@ -832,37 +581,6 @@ void do_setlink(char *opt_arg)
             set_link(fd, &link_desc, 0);
         }
 }
-
-static void do_getformat(char *optarg)
-{
-	struct ici_pad_desc pad_desc = {0};
-	parse_pad_desc(optarg, &pad_desc);
-
-	if(open_pipe_device())
-        {
-            printf("Getting \"%s\" %d:%d:\n", find_node_by_id(pad_desc.node_id),
-                   pad_desc.node_id, pad_desc.pad_idx);
-            get_pad_format(fd, pad_desc.node_id, pad_desc.pad_idx);
-        }
-}
-
-static void do_nodeinfo(char *optarg)
-{
-	struct ici_node_desc node_info = {
-		0,
-		.node_id = find_node_by_name(optarg),
-	};
-	PRINT_DBG("Getting info for node%d\n", atoi(optarg));
-
-	if(open_pipe_device())
-        {
-            if (xioctl(fd, ICI_IOC_ENUM_NODES, &node_info) == -1 )
-		errno_exit("Unable to get node \n", errno);
-
-            list_node(&node_info);
-        }
-}
-
 
 void parse_args(char argc, char *strtext)
 {
