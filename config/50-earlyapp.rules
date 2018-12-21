@@ -1,3 +1,4 @@
 KERNEL=="cbc-early-signals" GROUP="ias" MODE="660"
 KERNEL=="intel_pipeline" GROUP="ias" MODE="660"
 KERNEL=="intel_stream*" GROUP="ias" MODE="660"
+KERNEL=="ipu-psys0" GROUP="ias" MODE="660"
