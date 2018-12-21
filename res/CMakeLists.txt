@@ -27,8 +27,8 @@ SET(RES_FILES
     beep.wav
     jingle.wav
     splash_video.mp4
-    clear_fb.fb
-    )
+    splash_video.h264
+    clear_fb.fb)
 
 INSTALL(FILES ${RES_FILES} DESTINATION
     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/)

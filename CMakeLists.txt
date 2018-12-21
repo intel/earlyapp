@@ -29,17 +29,20 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 PROJECT("earlyapp")
 SET(PROJECT_VERSION_MAJOR 0)
 SET(PROJECT_VERSION_MINOR 9)
-SET(PROJECT_VERSION_PATCH 15)
+SET(PROJECT_VERSION_PATCH 16)
 
 # Version file.
 CONFIGURE_FILE("version.h.in" ${CMAKE_BINARY_DIR}/include/EAVersion.h)
+
+# Program executable.
+SET(PROGRAM_EXE ${CMAKE_PROJECT_NAME})
 
 
 # [Features]
 #  - Log output
 OPTION(USE_LOGOUTPUT "Control detailed log output to standard out" OFF)
 IF(USE_LOGOUTPUT)
-    ADD_DEFINITIONS(-DUSE_LOGOUTPUT)
+    ADD_DEFINITIONS(-DUSE_LOGOUTPUT -DBOOST_LOG_DYN_LINK)
 ENDIF(USE_LOGOUTPUT)
 
 #  - Log demsg output
@@ -49,9 +52,7 @@ IF(USE_DMESGLOG)
 ENDIF(USE_DMESGLOG)
 
 
-# Program executable.
-SET(PROGRAM_EXE ${CMAKE_PROJECT_NAME})
-SUBDIRS(src)
+SUBDIRS(ext/MediaSDK/src ext/CameraICI/src src)
 
 # Service configuration
 SUBDIRS(config)

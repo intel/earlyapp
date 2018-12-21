@@ -14,12 +14,15 @@ https://opensource.org/licenses/MIT
 ## Dependencies
 - CMake
 - Boost libraries
-- GStreamer-1.0
+- GStreamer
+- ALSA
+- Intel Media SDK
 
 
 ## Program options
  - --help: Show usage.
- - -c [--camera-input] &lt;[ici|v4l2]&gt;: Set camera input source, default is ici.
+ - -v [ --version ]: Print version number.
+ - -c [ --camera-input ] &lt;cam input&gt; Camera input source selection, only supported with use-gstreamer option. 
  - -s [--splash-video] &lt;file path&gt;: Set splash video path.
  - -d [--cbc-device] &lt;device path&gt;: Set CBC device path.
  - --bootup-sound &lt;file path&gt;: Set bootup sound path.
@@ -27,6 +30,8 @@ https://opensource.org/licenses/MIT
  - -w [--width] &lt;nubmer&gt;: Set display width.
  - -h [--height] &lt;number&gt;: Set display height.
  - --gpio-number &lt;number&gt;: GPIO number for KPI measurements. Negative values will be ignored.
+ - --gpio-sustain &lt;number&gt;: GPIO sustaining time in ms for KPI measurements.
+ - --use-gstreamer : Use GStreamer for auido, camera and video.
 
 
 ## Building
@@ -62,4 +67,5 @@ https://opensource.org/licenses/MIT
   ```shell
   $ cmake -DUSE_DMESGLOG=ON ..
   ```
+
 

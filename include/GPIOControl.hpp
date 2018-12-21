@@ -28,6 +28,7 @@
 
 #include <unistd.h>
 #include <string>
+
 #include "Configuration.hpp"
 
 namespace earlyapp
@@ -50,11 +51,11 @@ namespace earlyapp
         /**
           @brief Constructor.
           @param gpioNumber GPIO number to control.
-          @param sleepTime Sleep time after the first High/Low control to next.
+          @param sustainTime GPIO peak sustaining time in ms.
         */
         GPIOControl(
             int gpioNumber = Configuration::NOT_SET,
-            useconds_t sleepTime = 1000);
+            unsigned int peakSustainTime = Configuration::DEFAULT_GPIOSUSTAIN);
 
         /**
            @brief Ouput GPIO with given value.
@@ -64,9 +65,14 @@ namespace earlyapp
         bool output(eGPIOValue highLow);
 
         /**
-           @brief Sleep for preset time.
+           @brief Sustain current GPIO output for given time.
          */
-        void sleep(void);
+        void sustain(void);
+
+        /**
+           @brief Output GPIO patther - One pulse for user set time.
+         */
+        void outputPattern(void);
 
         /**
           @brief GPIO export path.
@@ -98,13 +104,35 @@ namespace earlyapp
         int m_GPIONumber = -1;
 
         /**
-          @brief User given sleep time.
+          @brief GPIO sustaining time in ms.
          */
-        useconds_t m_SleepTime = 0;
+        unsigned int m_SustainTime = 0;
 
         /**
           @brief Hidden default constructor.
         */
         GPIOControl(void) { };
     };
+
+    /**
+       @brief GPIOControl C interfaces - Create.
+       @param gpioNumber GPIO number to be controlled.
+       @param peakSustainTime Time in ms GPIO staying at HIGH status.
+     */
+    extern "C" void* GPIOControl_create(
+        int gpioNumber,
+        unsigned int peakSustainTime = Configuration::DEFAULT_GPIOSUSTAIN);
+
+    /**
+       @brief GPIOControl C interfaces - Release resource.
+       @param pGPIOClass A pointer for a GPIOControl.
+     */
+    extern "C" void GPIOControl_release(void* pGPIOClass);
+
+    /**
+       @brief GPIOControl C interfaces - GPIO output pattern.
+       @param pGPIOClass A pointer for a GPIOControl.
+     */
+    extern "C" void GPIOControl_outputPattern(void* pGPIOClass);
+
 } // namespace

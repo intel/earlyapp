@@ -27,9 +27,9 @@
 #pragma once
 
 #include <string>
-#include <gst/gst.h>
+#include <boost/thread.hpp>
+
 #include "OutputDevice.hpp"
-#include "GStreamerApp.hpp"
 #include "Configuration.hpp"
 
 
@@ -38,7 +38,7 @@ namespace earlyapp
     /**
       @brief A class abstracts audio playback device.
      */
-    class AudioDevice: public OutputDevice, public GStreamerApp
+    class AudioDevice: public OutputDevice
     {
     public:
         /**
@@ -78,34 +78,57 @@ namespace earlyapp
         */
         virtual ~AudioDevice(void);
 
-    protected:
-        /**
-          @brief Create an audio GStreamer pipeline.
-          @param pConf User set configurations.
-         */
-        virtual GstElement* createPipeline(std::shared_ptr<Configuration> pConf);
 
     private:
+        /**
+           @brief Wave file header.
+         */
+        typedef struct WAV_HEADER
+        {
+            /* RIFF Chunk Descriptor */
+            unsigned char   riff[4];           // RIFF
+            unsigned int    chunkSize;         // RIFF Chunk Size
+            unsigned char   wave[4];           // WAVE Header
+            /* "fmt" sub-chunk */
+            unsigned char   subchunk1ID[4];    // FMT header
+            unsigned int    subchunk1Size;     // Size of the fmt chunk
+            unsigned short  audioFormat;       // Audio format 1=PCM,6=mulaw,7=alaw,257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM
+            unsigned short  numberOfChannels;  // Number of channels 1=Mono 2=Sterio
+            unsigned int    sampleRatePerSec;  // Sampling Frequency in Hz
+            unsigned int    byteRatePerSec;    // bytes per second
+            unsigned short  blockAlign;        // 2=16-bit mono, 4=16-bit stereo
+            unsigned short  bitsPerSample;     // Number of bits per sample
+            /* "data" sub-chunk */
+            unsigned char   subchunk2ID[4];    // "data"  string
+            unsigned int    subchunk2Size;     // Sampled data length
+        } WavHeader;
+
         // Hide the default constructor to prevent instancitating.
-        AudioDevice(void) { }
+        AudioDevice(void) { OutputDevice::m_pDevName = "ALSA Audio"; }
 
         // Program configuration.
         std::shared_ptr<Configuration> m_pConf;
 
         static  AudioDevice* m_pADev;
 
-        /*
-          GStreamer elements.
+        /**
+           @brief Playback file name.
          */
-        GstElement* m_pAudioSrc = nullptr;
-        GstElement* m_pAlsaSink = nullptr;
-        GstElement* m_pWavParse = nullptr;
-        GstElement* m_pAudioCnv = nullptr;
-        GstElement* m_pAudioPipeline = nullptr;
+        std::string m_WavFileName;
+
+        /*
+          @brief ALSA playback thread.
+         */
+        boost::thread* m_PlayThread = nullptr;
 
         /**
           @brief Releases audio resources except pipeline.
          */
         void releaseAudioResource(void);
+
+        /**
+           @brief A thread function to palyback using ALSA.
+         */
+        static void playbackALSA(const char* filePath);
     };
 } // namespace

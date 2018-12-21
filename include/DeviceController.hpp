@@ -27,14 +27,12 @@
 #pragma once
 
 #include <set>
+#include <mutex>
 
 #include "CBCEvent.hpp"
 #include "OutputDevice.hpp"
-#include "AudioDevice.hpp"
-#include "VideoDevice.hpp"
-#include "CameraDevice.hpp"
-#include "SystemStatusTracker.hpp"
 #include "Configuration.hpp"
+#include "SystemStatusTracker.hpp"
 
 
 namespace earlyapp
@@ -50,6 +48,13 @@ namespace earlyapp
            @param pConf User set configuration.
            @param pSST System status tracker.
         */
+        DeviceController(void);
+
+        /**
+           @brief Constructor.
+           @param pConf User set configuration.
+           @param pSST System status tracker.
+        */
         DeviceController(std::shared_ptr<Configuration> pConf, SystemStatusTracker* pSST);
 
         /**
@@ -58,10 +63,10 @@ namespace earlyapp
            @param pVid Video device instance.
            @param pCam Camera device instance.
         */
-        void init(
-            AudioDevice* pAud=nullptr,
-            VideoDevice* pVid=nullptr,
-            CameraDevice* pCam=nullptr);
+        virtual void init(
+            OutputDevice* pAud=nullptr,
+            OutputDevice* pVid=nullptr,
+            OutputDevice* pCam=nullptr);
 
         /**
            @brief Control devices.
@@ -104,7 +109,7 @@ namespace earlyapp
         /**
            @brief Container for all controlling  Output devices.
         */
-        std::set<OutputDevice*> m_devs;
+        std::set<OutputDevice*> m_Devs;
 
         /**
            @brief Configuration.
@@ -114,16 +119,47 @@ namespace earlyapp
         /**
            @brief Audio device instance.
          */
-        AudioDevice* m_pAud = nullptr;
+        OutputDevice* m_pAud = nullptr;
 
         /**
            @brief Video device instance.
         */
-        VideoDevice* m_pVid = nullptr;
+        OutputDevice* m_pVid = nullptr;
 
         /**
            @brief Camera device instance.
         */
-        CameraDevice* m_pCam = nullptr;
+        OutputDevice* m_pCam = nullptr;
+
+        /**
+           @brief Add output instance if valid.
+        */
+        inline void addDevice(OutputDevice* pDev);
+
+        /**
+          @brief Block until the Wayland compositor is ready.
+         */
+        void waitForWayland(void);
+
+        /**
+           @brief Maximum length of the Wayland socket path.
+         */
+        const int WAYLAND_SOCKET_PATH_LENGTH = 255;
+
+        /**
+           @brief Environment variable XDG_RUNTIME_DIR.
+        */
+        const char* XDG_RUNTIME_DIR = "XDG_RUNTIME_DIR";
+
+        /**
+           @brief Environment variable WAYLAND_DISPLAY.
+        */
+        const char* WAYLAND_DISPLAY = "WAYLAND_DISPLAY";
+
+        /**
+           @brief Default wayland socket name.
+        */
+        const char* DEFAULT_WAYLAND_SOCKET = "wayland-0";
+
     };
 } // namespace

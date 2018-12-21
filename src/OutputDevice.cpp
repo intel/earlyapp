@@ -67,11 +67,12 @@ namespace earlyapp
     void OutputDevice::init(std::shared_ptr<Configuration> pConf)
     {
         int gpioNumber = pConf->gpioNumber();
+        unsigned int sustainTime = pConf->gpioSustain();
         if(gpioNumber > 0)
         {
             LINF_(TAG, boost::str(
                       boost::format("Setting GPIO %d with default sleep time") % gpioNumber));
-            m_pGPIOCtrl = new GPIOControl(gpioNumber);
+            m_pGPIOCtrl = new GPIOControl(gpioNumber, sustainTime);
         }
     }
 
@@ -123,12 +124,16 @@ namespace earlyapp
             // No GPIO control.
             return;
         }
+        m_pGPIOCtrl->outputPattern();
+    }
 
-        // Control GPIO with pattern of High-Low-Sleep-High-Low.
-        m_pGPIOCtrl->output(GPIOControl::HIGH);
-        m_pGPIOCtrl->output(GPIOControl::LOW);
-        m_pGPIOCtrl->sleep();
-        m_pGPIOCtrl->output(GPIOControl::HIGH);
-        m_pGPIOCtrl->output(GPIOControl::LOW);
+    // Device name.
+    const char* OutputDevice::deviceName(void) const
+    {
+        if(m_pDevName == nullptr)
+        {
+            return "UNKNOWN";
+        }
+        return m_pDevName;
     }
 } // namespace

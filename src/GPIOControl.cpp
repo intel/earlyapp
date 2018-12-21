@@ -45,7 +45,7 @@
 namespace earlyapp
 {
     // Constructor.
-    GPIOControl::GPIOControl(int gpioNumber, useconds_t sleepTime)
+    GPIOControl::GPIOControl(int gpioNumber, unsigned int peakSustainTime)
     {
         // Disregards for wrong GPIO settings.
         if(gpioNumber > 0)
@@ -59,6 +59,10 @@ namespace earlyapp
             m_Valid = false;
             LINF_(TAG, "Not controlling GPIO.");
         }
+
+        // Peak time. x 1000 to make it ms.
+        m_SustainTime = peakSustainTime * 1000;
+        LINF_(TAG, "Peak sustaining time(us): " << m_SustainTime);
     }
 
     // Output GPIO.
@@ -69,7 +73,7 @@ namespace earlyapp
         size_t gpioStrLen = strlen(cstrGPIO);
 
         // Value path.
-        int valueFd = open(valuePath()->c_str(), O_WRONLY|O_EXCL);
+        int valueFd = open(valuePath()->c_str(), O_WRONLY);
         if(valueFd < 0)
         {
             // Set export / direction path when failed to open the valuePath().
@@ -109,10 +113,18 @@ namespace earlyapp
         return true;
     }
 
-    // Sleep for given time.
-    void GPIOControl::sleep(void)
+    // Sustain current output for given time.
+    void GPIOControl::sustain(void)
     {
-        usleep(m_SleepTime);
+        usleep(m_SustainTime);
+    }
+
+    // GPIO Output Pattern.
+    void GPIOControl::outputPattern(void)
+    {
+        output(HIGH);
+        sustain();
+        output(LOW);
     }
 
     // GPIO export path.
@@ -144,5 +156,33 @@ namespace earlyapp
         ss << "/value";
         std::shared_ptr<std::string> r(new std::string(ss.str()));
         return r;
+    }
+
+    /**
+       C interfaces.
+     */
+
+    // Create GPIO control.
+    void* GPIOControl_create(int gpioNumber, unsigned int peakSustainTime)
+    {
+        return new GPIOControl(gpioNumber, peakSustainTime);
+    }
+
+    // Release GPOI control.
+    void GPIOControl_release(void* pGPIOClass)
+    {
+        if(pGPIOClass != NULL)
+        {
+            delete static_cast<GPIOControl*>(pGPIOClass);
+        }
+    }
+
+    // Output GPIO pattern.
+    void GPIOControl_outputPattern(void* pGPIOClass)
+    {
+        if(pGPIOClass != NULL)
+        {
+            static_cast<GPIOControl*>(pGPIOClass)->outputPattern();
+        }
     }
 } // namespace

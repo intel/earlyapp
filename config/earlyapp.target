@@ -3,6 +3,9 @@ Description=earlyapp target
 Wants=earlyapp.service
 After=earlyapp.service
 
+# Delay some heavier services to speed up earlyapp loading
+Before=systemd-udevd.service systemd-udev-trigger.service systemd-modules-load.service
+
 [Install]
 WantedBy=basic.target
 Also=earlyapp_resume.service

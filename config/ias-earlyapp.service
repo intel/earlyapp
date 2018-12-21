@@ -5,9 +5,8 @@ DefaultDependencies=no
 Conflicts=shutdown.target
 Before=shutdown.target
 
-# /dev/dri/card0 must belong to video group
-Requires=ias-pre.service
-After=ias-pre.service
+Requires=ias-earlyapp-setup.service
+After=ias-earlyapp-setup.service
 
 [Service]
 Environment=XDG_CONFIG_HOME=/usr/share/xdg/weston XDG_RUNTIME_DIR=/run/ias

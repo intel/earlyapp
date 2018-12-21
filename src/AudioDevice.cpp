@@ -25,7 +25,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <string>
-#include <gst/gst.h>
+#include <boost/thread.hpp>
+#include <alsa/asoundlib.h>
 
 #include "EALog.h"
 #include "OutputDevice.hpp"
@@ -75,55 +76,9 @@ namespace earlyapp
     {
         OutputDevice::init(pConf);
 
-        // Create an audio device pipeline.
-        m_pAudioPipeline = createPipeline(pConf);
-
-        if(! GStreamerApp::init(m_pAudioPipeline, true))
-        {
-            LERR_(TAG, "Failed to init GST app.");
-            return;
-        }
-
         LINF_(TAG, "Audio device initialized");
     }
 
-
-    /*
-      Create a pipeline for audio device.
-     */
-    GstElement* AudioDevice::createPipeline(std::shared_ptr<Configuration> pConf)
-    {
-        LINF_(TAG, "Create audio pipeline");
-
-        // File source.
-        m_pAudioSrc = gst_element_factory_make("filesrc", nullptr);
-
-        // Sink, parse, convert.
-        m_pAlsaSink = gst_element_factory_make("alsasink", nullptr);
-        m_pWavParse = gst_element_factory_make("wavparse", nullptr);
-        m_pAudioCnv = gst_element_factory_make("audioconvert", nullptr);
-
-        if(m_pAudioSrc && m_pAlsaSink && m_pWavParse && m_pAudioCnv)
-        {
-            // Pipeline & link
-            m_pAudioPipeline = gst_pipeline_new(nullptr);
-            gst_bin_add_many(
-                GST_BIN(m_pAudioPipeline),
-                m_pAudioSrc,
-                m_pWavParse,
-                m_pAudioCnv,
-                m_pAlsaSink,
-                nullptr);
-            gst_element_link_many(m_pAudioSrc, m_pWavParse, m_pAudioCnv, m_pAlsaSink, nullptr);
-        }
-        else
-        {
-            LERR_(TAG, "Failed to create audio pipeline.");
-            return nullptr;
-        }
-
-        return m_pAudioPipeline;
-    }
 
     /*
       preparePlay
@@ -138,11 +93,8 @@ namespace earlyapp
             stop();
 
             // Fetch a file name to play.
-            std::string playFile = playParam->fileToPlay();
-            LINF_(TAG, "*Play file* " << playFile);
-
-            // Update audio source.
-            g_object_set(G_OBJECT(m_pAudioSrc), "location", playFile.c_str(), nullptr);
+            m_WavFileName = playParam->fileToPlay();
+            LINF_(TAG, "*Play file* " << m_WavFileName);
         }
         else
         {
@@ -158,7 +110,91 @@ namespace earlyapp
     void AudioDevice::play(void)
     {
         LINF_(TAG, "AudioDevice play");
-        startPlay();
+
+        m_PlayThread = new boost::thread(playbackALSA, m_WavFileName.c_str());
+    }
+
+
+    /*
+      Playback ALSA.
+     */
+    void AudioDevice::playbackALSA(const char* filePath)
+    {
+        // Wav file info.
+        WavHeader wavInfo;
+
+        /**
+           Open the file.
+        */
+        FILE* fpWav = nullptr;
+        if((fpWav = fopen(filePath, "rb")) == nullptr)
+        {
+            LERR_(TAG, "Failed to open a wav file: " << filePath);
+            return;
+        }
+
+        /**
+           Read header.
+        */
+        size_t readHeaderSize = fread(&wavInfo, 1, sizeof(WavHeader), fpWav);
+        if(readHeaderSize != sizeof(WavHeader))
+        {
+            LERR_(TAG, "Failed to read wav header - size: " << readHeaderSize);
+            return;
+        }
+
+        /**
+           Start play back.
+        */
+        size_t buffSize = 4096;
+        size_t sampleSize = 2;
+        size_t readSize = 0;
+        unsigned char* buff = new unsigned char[buffSize];
+        int pcm = 0;
+        snd_pcm_t* pALSAHandle = nullptr;
+        LINF_(TAG, "Start ALSA playback");
+
+        // Prepare ALSA device.
+        if((pcm = snd_pcm_open(&pALSAHandle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0)
+        {
+            LERR_(TAG, "Failed to open default PCM device: " << snd_strerror(pcm));
+            return;
+        }
+
+        if((pcm = snd_pcm_set_params(
+                pALSAHandle,
+                SND_PCM_FORMAT_S16_LE,
+                SND_PCM_ACCESS_RW_INTERLEAVED,
+                wavInfo.numberOfChannels,
+                wavInfo.sampleRatePerSec,
+                1,
+                50000)) < 0)
+        {
+            LERR_(TAG, "Fail to set configuration: " << snd_strerror(pcm));
+            return;
+        }
+
+        while((readSize = fread(buff, 1, buffSize, fpWav)) > 0)
+        {
+            snd_pcm_uframes_t frames = 0;
+
+            if((frames = snd_pcm_writei(pALSAHandle, buff, readSize / sampleSize)) < 0)
+            {
+                frames = snd_pcm_recover(pALSAHandle, frames, 0);
+                LERR_(TAG, "Failed to write audio data");
+                return;
+            }
+        }
+        LINF_(TAG, "Finished ALSA playback");
+
+        snd_pcm_drain(pALSAHandle);
+        snd_pcm_close(pALSAHandle);
+
+        /**
+           Close resources.
+        */
+        delete buff;
+        fclose(fpWav);
     }
 
     /*
@@ -167,7 +203,14 @@ namespace earlyapp
     void AudioDevice::stop(void)
     {
         LINF_(TAG, "AudioDevice stop");
-        stopPlay();
+
+        if(m_PlayThread != nullptr)
+        {
+            m_PlayThread->join();
+            m_PlayThread = nullptr;
+
+            LINF_(TAG, "Thread joined");
+        }
     }
 
     /*
@@ -186,32 +229,10 @@ namespace earlyapp
     {
         LINF_(TAG, "Releasing resources...");
 
-        if(m_pAudioSrc)
+        if(m_PlayThread != nullptr)
         {
-            gst_object_unparent(GST_OBJECT(m_pAudioSrc));
-            gst_object_unref(GST_OBJECT(m_pAudioSrc));
-            m_pAudioSrc = nullptr;
-        }
-
-        if(m_pAlsaSink)
-        {
-            gst_object_unparent(GST_OBJECT(m_pAlsaSink));
-            gst_object_unref(GST_OBJECT(m_pAlsaSink));
-            m_pAlsaSink = nullptr;
-        }
-
-        if(m_pWavParse)
-        {
-            gst_object_unparent(GST_OBJECT(m_pWavParse));
-            gst_object_unref(GST_OBJECT(m_pWavParse));
-            m_pWavParse = nullptr;
-        }
-
-        if(m_pAudioCnv)
-        {
-            gst_object_unparent(GST_OBJECT(m_pAudioCnv));
-            gst_object_unref(GST_OBJECT(m_pAudioCnv));
-            m_pAudioCnv = nullptr;
+            m_PlayThread->join();
+            m_PlayThread = nullptr;
         }
     }
 } // namespace

@@ -76,7 +76,6 @@ namespace earlyapp
          */
         virtual void preparePlay(std::shared_ptr<DeviceParameter> playParam=nullptr);
 
-
         /**
           @brief Play the device.
          */
@@ -108,17 +107,27 @@ namespace earlyapp
         void outputGPIOPattern(void);
 
         /**
+           @brief Device name.
+         */
+        const char* deviceName(void) const;
+
+        /**
            @brief Disable copy assigned operators.
         */
         OutputDevice& operator=(const OutputDevice&) = delete;
         OutputDevice(const OutputDevice&) = delete;
         OutputDevice(void) = default;
 
-    private:
+    protected:
         /**
           @brief GPIO control, nullptr if user didn't provide GPIO control option.
         */
         GPIOControl* m_pGPIOCtrl = nullptr;
+
+        /**
+           @brief Device name.
+         */
+        const char* m_pDevName = nullptr;
     };
 } // namespace
 
