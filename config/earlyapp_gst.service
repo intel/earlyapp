@@ -12,3 +12,6 @@ ExecStart=/usr/bin/earlyapp --rvc-sound /usr/share/earlyapp/beep.wav --use-gstre
 Slice=earlyapp.slice
 User=ias
 SupplementaryGroups=video render
+
+[Install]
+Alias=earlyapp.service
