@@ -22,42 +22,36 @@
 # SPDX-License-Identifier: MIT
 #
 
+SET(FASTBOOT_EXE ${CMAKE_PROJECT_NAME}-fastboot)
 
-# Resource files.
-SET(CONF_FILES
-    earlyapp.target
-    earlyapp.slice
-    ias-earlyapp.service
-    ias-earlyapp-setup.service
-    earlyapp_resume.service
-    earlyapp-setup.service
-    earlyapp-setup-ipu.service
-    simple-egl.service
-    simple-egl_resume.service)
+FIND_PACKAGE(PkgConfig REQUIRED)
+PKG_SEARCH_MODULE(LIBDRM REQUIRED libdrm)
 
-# Early App Service file.
-# GStreamer base devices require different settings.
-SET(EAS_TARGET earlyapp.service)
-SET(EAS_SRC
-    earlyapp_gst.service
-    earlyapp.service)
+SET(SRC_FILES main.c
+	splash_screen_drm.c
+	)
 
-# Script files.
-SET(SCRIPT_FILES
-    kpi_gpio.sh)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR} ${LIBDRM_INCLUDE_DIRS})
 
-# Install earlyapp.service
-INSTALL(FILES ${EAS_SRC}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system/)
+LINK_LIBRARIES(
+    pthread
+    ${LIBDRM_LIBRARIES}
+    ${LINK_LIBRARIES})
 
-# Install other configuration files.
-INSTALL(FILES ${CONF_FILES}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system/)
+ADD_COMPILE_OPTIONS(
+    -Wall
+    -Wformat -Wformat-security
+    -O2 -D_FORTIFY_SOURCE=2
+    -fPIE -fPIC
+    -fstack-protector-strong)
 
-# Install scripts.
-INSTALL(PROGRAMS ${SCRIPT_FILES}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/)
+SET(CMAKE_EXE_LINKER_FLAGS "-pie -z noexecstack -z relro -z now")
 
-# Install udev rules.
-INSTALL(FILES 50-earlyapp.rules
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/udev/rules.d/)
+ADD_DEFINITIONS(-DWORKDIR="/var/lib/${PROJECT_NAME}")
+ADD_DEFINITIONS(-DSPLASH_SCREEN_FB_FILE="${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/clear_fb.fb")
+ADD_DEFINITIONS(-DSPLASH_SCREEN_START_CMD="${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/kpi_gpio.sh 442 1")
+ADD_DEFINITIONS(-DSPLASH_SCREEN_END_CMD="${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/kpi_gpio.sh 442 0")
+
+ADD_EXECUTABLE(${FASTBOOT_EXE} ${SRC_FILES})
+
+INSTALL(TARGETS ${FASTBOOT_EXE} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)

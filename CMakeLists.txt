@@ -59,3 +59,5 @@ SUBDIRS(config)
 # Resources files
 SUBDIRS(res)
 
+SUBDIRS(fastboot)
+
