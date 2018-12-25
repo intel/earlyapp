@@ -5,7 +5,7 @@ DefaultDependencies=no
 
 [Service]
 Environment=XDG_RUNTIME_DIR=/run/ias/
-ExecStart=/usr/bin/glmark2-es2-wayland --run-forever --fullscreen --annotate
+ExecStart=/usr/bin/weston-simple-egl -f
 ExecStartPost=/usr/share/earlyapp/kpi_gpio.sh 442 0
 Slice=earlyapp.slice
 

@@ -32,8 +32,8 @@ SET(CONF_FILES
     earlyapp_resume.service
     earlyapp-setup.service
     fb_splash.service
-    glmark2.service
-    glmark2_resume.service)
+    simple-egl.service
+    simple-egl_resume.service)
 
 # Early App Service file.
 # GStreamer base devices require different settings.
@@ -45,7 +45,6 @@ SET(EAS_SRC
 # Script files.
 SET(SCRIPT_FILES
     kpi_gpio.sh)
-
 
 # Install earlyapp.service
 INSTALL(FILES ${EAS_SRC}
