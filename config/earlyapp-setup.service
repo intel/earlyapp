@@ -1,4 +1,5 @@
 [Unit]
+Description=Setup device nodes for Early App
 DefaultDependencies=no
 After=cbc_attach.service
 
@@ -7,13 +8,11 @@ Type=oneshot
 RemainAfterExit=yes
 Slice=earlyapp.slice
 
-# Load IPU/ICI modules
-ExecStart=/usr/bin/modprobe -a crlmodule-lite intel-ipu4 intel-ipu4-mmu intel-ipu4-psys ici-isys-mod intel-ipu4-psys-csslib intel-ipu4-isys-csslib
 # Initialize GPIO device node
 ExecStart=/usr/share/earlyapp/kpi_gpio.sh 442
-# Set permissions on CBC, GPIO, and ICI device nodes
-ExecStart=/usr/bin/chown :ias /dev/cbc-early-signals /sys/class/gpio/gpio442/value /dev/intel_stream27 /dev/intel_pipeline /dev/ipu-psys0
-ExecStart=/usr/bin/chmod g+rw /dev/cbc-early-signals /sys/class/gpio/gpio442/value /dev/intel_stream27 /dev/intel_pipeline /dev/ipu-psys0
+# Set permissions on CBC and GPIO device nodes
+ExecStart=/usr/bin/chown :ias /dev/cbc-early-signals /sys/class/gpio/gpio442/value
+ExecStart=/usr/bin/chmod g+rw /dev/cbc-early-signals /sys/class/gpio/gpio442/value
 # Set permissions on GPU render nodes
 ExecStart=/usr/bin/chown :render /dev/dri/renderD128
 ExecStart=/usr/bin/chmod g+rw /dev/dri/renderD128

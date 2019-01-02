@@ -31,6 +31,7 @@ SET(CONF_FILES
     ias-earlyapp-setup.service
     earlyapp_resume.service
     earlyapp-setup.service
+    earlyapp-setup-ipu.service
     fb_splash.service
     simple-egl.service
     simple-egl_resume.service)
