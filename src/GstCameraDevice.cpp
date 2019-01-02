@@ -26,6 +26,7 @@
 
 #include <string>
 #include <boost/thread.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include "EALog.h"
 #include "OutputDevice.hpp"
@@ -68,19 +69,60 @@ namespace earlyapp
         return m_pCDev;
     }
 
-    /*
-      Create a GStreamer pipeline.
+    /**
+       Create a GStreamer pipeline.
      */
     GstElement* GstCameraDevice::createPipeline(std::shared_ptr<Configuration> pConf)
+    {
+        // Custom GStreamer pipeline.
+        std::string customCmd = pConf->gstCamCmd();
+        if(customCmd.compare(Configuration::DEFAULT_GSTCAMCMD) != 0)
+        {
+            return createPipelineFromString(customCmd);
+        }
+
+        // Fixed GStreamer pipline.
+        std::string camSrc = pConf->cameraInputSource();
+        return createFixedPipeline(camSrc);
+    }
+
+    /**
+       Create a custom GStreamer pipeline.
+     */
+    GstElement* GstCameraDevice::createPipelineFromString(std::string& customGstCmd)
+    {
+        GstElement* pipeline = nullptr;
+        GError* err = nullptr;
+
+        // Replace characters.
+        boost::replace_all(customGstCmd, "'", "");
+        const char* launchStr = customGstCmd.c_str();
+        LINF_(TAG, "Custom pipeline: " << launchStr);
+
+        // GST parser not always return nullptr for errors.
+        pipeline = gst_parse_launch(launchStr, &err);
+        if(err)
+        {
+            LERR_(TAG, "Failed to create custom camera pipeline: " << pipeline);
+            LERR_(TAG, err->message);
+            return nullptr;
+        }
+
+        return pipeline;
+    }
+
+    /*
+      Create a fixed GStreamer pipeline.
+     */
+    GstElement* GstCameraDevice::createFixedPipeline(std::string& camInputSrc)
     {
         // Camera pipeline.
         GstElement* camPipeline = gst_pipeline_new(nullptr);
         GstElement* camSrcCapsFilter = nullptr;
         /*
-          Camera input source. - ICI, V4L2, Test source.
+          Camera input source. - icamsrc, V4L2, Test source.
          */
-        std::string camSrc = pConf->cameraInputSource();
-        if(camSrc.compare("ici") == 0)
+        if(camInputSrc.compare("icam") == 0)
         {
             m_pCamSrc = gst_element_factory_make("icamerasrc", nullptr);
             g_object_set(G_OBJECT(m_pCamSrc), "device-name", 1, nullptr);
@@ -91,7 +133,7 @@ namespace earlyapp
             // TODO: Check evironment value GST_PLUGIN_PATH
 
             // Capsfilter.
-            GstCaps* iciCaps = gst_caps_new_simple(
+            GstCaps* icamCaps = gst_caps_new_simple(
                 "video/x-raw",
                 "format", G_TYPE_STRING, "UYVY",
                 "width", G_TYPE_INT, 720,
@@ -103,13 +145,13 @@ namespace earlyapp
             gst_bin_add(GST_BIN(camPipeline), m_pCamSrc);
             gst_bin_add(GST_BIN(camPipeline), camSrcCapsFilter);
 
-            if(! gst_element_link_pads_filtered(m_pCamSrc, "src", camSrcCapsFilter, "sink", iciCaps))
+            if(! gst_element_link_pads_filtered(m_pCamSrc, "src", camSrcCapsFilter, "sink", icamCaps))
             {
-                LWRN_(TAG, "Failed to link ici source to ici filter");
+                LWRN_(TAG, "Failed to link icam source to icam filter");
             }
-            gst_caps_unref(iciCaps);
+            gst_caps_unref(icamCaps);
         }
-        else if(camSrc.compare("v4l2") == 0)
+        else if(camInputSrc.compare("v4l2") == 0)
         {
             m_pCamSrc = gst_element_factory_make("v4l2src", nullptr);
             gst_bin_add(GST_BIN(camPipeline), m_pCamSrc);
@@ -204,7 +246,7 @@ namespace earlyapp
     void GstCameraDevice::play(void)
     {
         LINF_(TAG, "GstCameraDevice play");
-        // Initialization again makes ICI camera last longer.
+        // Initialization again makes icamsrc camera last longer.
         //init(m_pConf);
         OutputDevice::outputGPIOPattern();
         startPlay();

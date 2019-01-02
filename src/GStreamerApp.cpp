@@ -46,23 +46,6 @@ namespace earlyapp
         }
     }
 
-    /*
-      Intialize
-    */
-    bool GStreamerApp::init(const char* gstInitStr, bool createLoop)
-    {
-        LINF_(TAG, "Initializing GStreamerApp...");
-        m_bCreateLoop = createLoop;
-
-        LINF_(TAG, "Launching string: " << gstInitStr);
-        if((m_pGSTPipeline = gst_parse_launch(gstInitStr, nullptr)) == nullptr)
-        {
-            LERR_(TAG, "Failed to GST launch.");
-            return false;
-        }
-
-        return true;
-    }
 
     /*
       Intialize
@@ -75,7 +58,7 @@ namespace earlyapp
 
         if(m_pGSTPipeline == nullptr)
         {
-            LERR_(TAG, "Pipe line is invalid.");
+            LERR_(TAG, "Pipeline is invalid.");
             return false;
         }
         return true;
@@ -92,7 +75,7 @@ namespace earlyapp
         // GST pipeline
         if(m_pGSTPipeline == nullptr)
         {
-            LERR_(TAG, "Pipeline is invalid");
+            LERR_(TAG, "Pipeline is invalid(nullptr)");
             return;
         }
 

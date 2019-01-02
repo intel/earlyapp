@@ -47,7 +47,7 @@ namespace earlyapp
     // Default values.
     const char* Configuration::DEFAULT_AUDIO_SPLASHSOUND_PATH = "/usr/share/earlyapp/jingle.wav";
     const char* Configuration::DEFAULT_AUDIO_RVCSOUND_PATH = "/usr/share/earlyapp/beep.wav";
-    const char* Configuration::DEFAULT_CAMERA_INPUTSOURCE = "ici";
+    const char* Configuration::DEFAULT_CAMERA_INPUTSOURCE = "icam";
     const char* Configuration::DEFAULT_VIDEO_SPLASH_PATH = "/usr/share/earlyapp/splash_video.h264";
     const char* Configuration::DEFAULT_CBCDEVICE_PATH = "/dev/cbc-early-signals";
     const char* Configuration::DEFAULT_TESTCBCDEVICE_PATH = "";
@@ -56,6 +56,7 @@ namespace earlyapp
     const int Configuration::DEFAULT_GPIONUMBER = NOT_SET;
     const unsigned int Configuration::DEFAULT_GPIOSUSTAIN = 1;
     const bool Configuration::DEFAULT_USE_GSTREAMER = false;
+    const char* Configuration::DEFAULT_GSTCAMCMD = "";
 
 
     // Configuration keys.
@@ -70,6 +71,7 @@ namespace earlyapp
     const char* Configuration::KEY_GPIONUMBER = "gpio-number";
     const char* Configuration::KEY_GPIOSUSTAIN = "gpio-sustain";
     const char* Configuration::KEY_USEGSTREAMER = "use-gstreamer";
+    const char* Configuration::KEY_GSTCAMCMD = "gstcamcmd";
 
 
 
@@ -151,7 +153,7 @@ namespace earlyapp
 
     const std::string& Configuration::stringMappedValueOf(const char* key)
     {
-        static const std::string nullStr = std::string("null");
+        static const std::string nullStr = std::string("");
         const std::string* valueStr;
 
         try
@@ -197,8 +199,14 @@ namespace earlyapp
     // Use GStreamer
     bool Configuration::useGStreamer(void) const
     {
-        unsigned int useGStreamer = m_VM[Configuration::KEY_USEGSTREAMER].as<bool>();
+        bool useGStreamer = m_VM[Configuration::KEY_USEGSTREAMER].as<bool>();
         return useGStreamer;
+    }
+
+    // GStreamer camera custom command.
+    const std::string& Configuration::gstCamCmd(void)
+    {
+        return stringMappedValueOf(Configuration::KEY_GSTCAMCMD);
     }
 
     // Destructor.
@@ -229,7 +237,7 @@ namespace earlyapp
                 // NOTE: Camera source option is supported with GStreamer.
                 ("camera-input,c",
                  boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_CAMERA_INPUTSOURCE)->notifier(&checkCameraParameter),
-                 "Camera input source selection, only supported with use-gstreamer option.")
+                 "Camera input source selection. Only supported with use-gstreamer option.")
 
                 // Splash video.
                 ("splash-video,s",
@@ -279,14 +287,19 @@ namespace earlyapp
                 // Use GStreamer
                 (Configuration::KEY_USEGSTREAMER,
                  boost::program_options::bool_switch()->default_value(Configuration::DEFAULT_USE_GSTREAMER),
-                 "Use GStreamer for auido, camera and video.");
+                 "Use GStreamer for auido, camera and video.")
+
+                // Custom GStreamer camera command.
+                (Configuration::KEY_GSTCAMCMD,
+                 boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_GSTCAMCMD),
+                 "Custom GStreamer camera command. Only supported with use-gstreamer option.");
 
 
             boost::program_options::store(
                 boost::program_options::parse_command_line(argc, argv, *m_pDesc), m_VM);
             boost::program_options::notify(m_VM);
 
-            // Help.
+             // Help.
             if(m_VM.count("help"))
             {
                 m_Valid = false;
@@ -322,7 +335,7 @@ namespace earlyapp
     {
         // Supported camera options.
         if(
-            optStr.compare("ici") != 0
+            optStr.compare("icam") != 0
             && optStr.compare("v4l2") != 0
             && optStr.compare("test") != 0)
         {

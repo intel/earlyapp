@@ -35,7 +35,7 @@ namespace earlyapp
     /**
       @brief A class abstracts camera device.
      */
-    class GstCameraDevice: public OutputDevice, GStreamerApp
+    class GstCameraDevice: public OutputDevice, public GStreamerApp
     {
     public:
         /**
@@ -64,6 +64,7 @@ namespace earlyapp
         */
         void terminate(void);
 
+
         /**
            @brief Destructor.
         */
@@ -81,6 +82,20 @@ namespace earlyapp
            @brief Default constructor hidden in preivate to prevent instancitation.
         */
         GstCameraDevice(void) { OutputDevice::m_pDevName = "Gst Camera"; }
+
+        /**
+           @brief Create a custom command GStreamer pipeline.
+           @param customGstCmd GStreamer command string for creating a pipeline.
+           @return A new camera pipeline, nullptr for errors.
+         */
+        GstElement* createPipelineFromString(std::string& customGstCmd);
+
+        /**
+           @brief Create a fixed GStreamer pipeline for ICI.
+           @param camInputSrc Camera input source.
+           @return A new camera pipeline, nullptr for errors.
+         */
+        GstElement* createFixedPipeline(std::string& camInputSrc);
 
         /**
            @brief Camear device instance.

@@ -59,6 +59,7 @@ namespace earlyapp
         static const int DEFAULT_GPIONUMBER;
         static const useconds_t DEFAULT_GPIOSUSTAIN;
         static const bool DEFAULT_USE_GSTREAMER;
+        static const char* DEFAULT_GSTCAMCMD;
 
 
         /*
@@ -75,6 +76,7 @@ namespace earlyapp
         static const char* KEY_GPIONUMBER;
         static const char* KEY_GPIOSUSTAIN;
         static const char* KEY_USEGSTREAMER;
+        static const char* KEY_GSTCAMCMD;
 
 
         /**
@@ -162,6 +164,11 @@ namespace earlyapp
            @brief Returns whether user asked to use GStreamer.
         */
         bool useGStreamer(void) const;
+
+        /**
+           @brief Returns GStreamer camera custom command.
+         */
+        const std::string& gstCamCmd(void);
 
         /**
            @brief Disable copy assigned operators.
