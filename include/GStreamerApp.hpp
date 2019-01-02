@@ -43,14 +43,6 @@ namespace earlyapp
          */
         ~GStreamerApp(void);
 
-        /*
-          @brief Initializer
-          @param gstInitStr GStreamer initialization string.
-          @param createLoop True to create own loop.
-          @return true for successful initialization.
-        */
-        bool init(const char* gstInitStr, bool createLoop=true);
-
         /**
            @brief Initializer.
            @param gstPipeLine A pointer for a GStreamer pipeline.
@@ -80,10 +72,16 @@ namespace earlyapp
          */
         int displayWidth(void);
 
-        /*
+        /**
           @brief Returns display height
          */
         int displayHeight(void);
+
+        /**
+           @brief Returns GStreamer pipeline.
+         */
+        GstElement* gstPipeline(void) const { return m_pGSTPipeline; }
+
 
     protected:
         /**

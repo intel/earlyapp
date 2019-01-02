@@ -62,11 +62,13 @@ namespace earlyapp
            @param pAud Audio device instance.
            @param pVid Video device instance.
            @param pCam Camera device instance.
+           @param bWaitWL Wait for wayland socket before initialize devices.
         */
-        virtual void init(
+        void init(
             OutputDevice* pAud=nullptr,
             OutputDevice* pVid=nullptr,
-            OutputDevice* pCam=nullptr);
+            OutputDevice* pCam=nullptr,
+            bool bWaitWL = true);
 
         /**
            @brief Control devices.
