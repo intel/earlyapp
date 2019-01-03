@@ -69,7 +69,7 @@ namespace earlyapp
     /*
       Initialize device controller.
      */
-    void DeviceController::init(OutputDevice* pAud, OutputDevice* pVid, OutputDevice* pCam)
+    void DeviceController::init(OutputDevice* pAud, OutputDevice* pVid, OutputDevice* pCam, bool bWaitWL)
     {
         if(m_pSST == nullptr)
         {
@@ -104,7 +104,8 @@ namespace earlyapp
         dmesgLogPrint("EA: Waiting for Wayland socket...");
 #endif
         // Wait for the Wayland.
-        waitForWayland();
+        if(bWaitWL)
+            waitForWayland();
 #ifdef USE_DMESGLOG
         dmesgLogPrint("EA: Got Wayland compositor socket.");
 #endif

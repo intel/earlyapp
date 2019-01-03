@@ -22,7 +22,7 @@ https://opensource.org/licenses/MIT
 ## Program options
  - --help: Show usage.
  - -v [ --version ]: Print version number.
- - -c [ --camera-input ] &lt;cam input&gt; Camera input source selection, only supported with use-gstreamer option. 
+ - -c [ --camera-input ] &lt;cam input&gt; Camera input source selection. Only supported with use-gstreamer option.
  - -s [--splash-video] &lt;file path&gt;: Set splash video path.
  - -d [--cbc-device] &lt;device path&gt;: Set CBC device path.
  - --bootup-sound &lt;file path&gt;: Set bootup sound path.
@@ -32,6 +32,7 @@ https://opensource.org/licenses/MIT
  - --gpio-number &lt;number&gt;: GPIO number for KPI measurements. Negative values will be ignored.
  - --gpio-sustain &lt;number&gt;: GPIO sustaining time in ms for KPI measurements.
  - --use-gstreamer : Use GStreamer for auido, camera and video.
+ - --gstcamcmd &lt;custom definition&gt;: Custom GStreamer camera command. Only supported with use-gstreamer option.
 
 
 ## Building
