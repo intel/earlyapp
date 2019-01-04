@@ -12,3 +12,4 @@ ExecStart=/usr/bin/earlyapp --rvc-sound /usr/share/earlyapp/beep.wav --bootup-so
 Slice=earlyapp.slice
 User=ias
 SupplementaryGroups=video render
+Nice=-1
