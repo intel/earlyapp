@@ -23,6 +23,7 @@
  *
  * Authors: Bin Yang <bin.yang@intel.com>
  */
+#define _GNU_SOURCE
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -43,6 +44,53 @@
 #ifdef SPLASH_SCREEN_FB_FILE
 static pthread_t splash_screen_tid;
 void *splash_screen_init(void *arg);
+#endif
+
+#ifdef PRELOAD_LIST_FILE
+static pthread_t preload_tid;
+static void *preload_thread(void *arg)
+{
+	int fd;
+	struct stat sb;
+	int ret;
+	FILE *fp;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t nread;
+
+	fp = fopen(PRELOAD_LIST_FILE, "r");
+	if (!fp) {
+//		fprintf(stderr, "open preload list error (%d): %m\n", errno);
+		goto exit;
+	}
+
+	while ((nread = getline(&line, &len, fp)) != -1) {
+		if (nread < 2) {
+			continue;
+		}
+		if (line[nread - 1] == '\n' || line[nread - 1] == '\r')
+			line[nread - 1] = 0;
+		fd = open(line, O_RDONLY);
+		if (fd > 0) {
+			fstat(fd, &sb);
+			ret = readahead(fd, 0, sb.st_size);
+			if (ret == 0) {
+				//fprintf(stdout, "preload %s success\n", line);
+			}else {
+				fprintf(stdout, "preload %s error (%d): %m\n", line, errno);
+			}
+			close(fd);
+		} else {
+			//fprintf(stdout, "preload open %s error (%d): %m\n", line, errno);
+		}
+	}
+
+exit:
+	free(line);
+	if (fp)
+		fclose(fp);
+	return NULL;
+}
 #endif
 
 int main(int argc, char *argv[])
@@ -83,10 +131,18 @@ int main(int argc, char *argv[])
 #ifdef SPLASH_SCREEN_FB_FILE
 	pthread_create(&splash_screen_tid, NULL, splash_screen_init, NULL);
 #endif
-	//TODO read earlyapp, lib and res files into page cache in another thread
+
+#ifdef PRELOAD_LIST_FILE
+	pthread_create(&preload_tid, NULL, preload_thread, NULL);
+#endif
 
 #ifdef SPLASH_SCREEN_FB_FILE
 	pthread_join(splash_screen_tid, NULL);
 #endif
+
+#ifdef PRELOAD_LIST_FILE
+	pthread_join(preload_tid, NULL);
+#endif
+
 	return 0;
 }
