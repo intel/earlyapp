@@ -1,0 +1,11 @@
+[Unit]
+Description=Setup audio for Early App
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Slice=earlyapp.slice
+
+# Load audio driver
+ExecStart=/usr/bin/modprobe -a snd-soc-sst_bxt_tdf8532
