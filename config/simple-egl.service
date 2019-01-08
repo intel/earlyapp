@@ -2,6 +2,8 @@
 Requires=ias-earlyapp.service
 After=ias-earlyapp.service
 DefaultDependencies=no
+Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup.service
+After=ias-earlyapp.service cbc_attach.service earlyapp-setup.service
 
 [Service]
 Environment=XDG_RUNTIME_DIR=/run/ias/
@@ -16,4 +18,4 @@ Restart=on-failure
 
 [Install]
 WantedBy=graphical.target
-Also=glmark2_resume.service
+Also=simple-egl_resume.service
