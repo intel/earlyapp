@@ -1,0 +1,11 @@
+[Unit]
+Description=earlyapp target
+Wants=earlyapp_gst.service
+After=earlyapp_gst.service
+
+# Delay some heavier services to speed up earlyapp loading
+Before=systemd-udevd.service systemd-udev-trigger.service systemd-modules-load.service
+
+[Install]
+WantedBy=basic.target
+Also=earlyapp_resume.service
