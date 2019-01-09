@@ -1,0 +1,13 @@
+[Unit]
+Description=Setup device nodes for Early App
+DefaultDependencies=no
+After=cbc_attach.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Slice=earlyapp.slice
+
+# Set permissions on GPU render nodes
+ExecStart=/usr/bin/chown :render /dev/dri/renderD128
+ExecStart=/usr/bin/chmod g+rw /dev/dri/renderD128

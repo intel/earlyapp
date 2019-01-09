@@ -26,11 +26,13 @@
 # Resource files.
 SET(CONF_FILES
     earlyapp.target
+    earlyapp_gst.target
     earlyapp.slice
     ias-earlyapp.service
     ias-earlyapp-setup.service
     earlyapp_resume.service
     earlyapp-setup.service
+    earlyapp-setup_gst.service
     earlyapp-setup-ipu.service
     earlyapp-setup-audio.service
     simple-egl.service
