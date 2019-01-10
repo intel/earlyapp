@@ -1,4 +1,4 @@
-# Early Appls4
+# Early App
 
 ## Introduction
 This software is a testing application that runs on Clear Linux to verify
