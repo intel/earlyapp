@@ -1,5 +1,5 @@
 [Unit]
-Description=earlyapp target
+Description=earlyapp target for gstreamer
 Wants=earlyapp_gst.service
 After=earlyapp_gst.service
 
