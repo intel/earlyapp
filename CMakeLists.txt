@@ -36,6 +36,9 @@ CONFIGURE_FILE("version.h.in" ${CMAKE_BINARY_DIR}/include/EAVersion.h)
 # Program executable.
 SET(PROGRAM_EXE ${CMAKE_PROJECT_NAME})
 
+# Unit-test executable.
+SET(UNITTEST_EXE "ea_test")
+
 
 # [Features]
 #  - Log output
@@ -51,7 +54,11 @@ IF(USE_DMESGLOG)
 ENDIF(USE_DMESGLOG)
 
 
+# Sub directories.
 SUBDIRS(ext/MediaSDK/src ext/CameraICI/src src)
+
+# Unittests
+SUBDIRS(test)
 
 # Service configuration
 SUBDIRS(config)
@@ -59,5 +66,6 @@ SUBDIRS(config)
 # Resources files
 SUBDIRS(res)
 
+# Fastboot
 SUBDIRS(fastboot)
 
