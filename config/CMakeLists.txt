@@ -34,6 +34,7 @@ SET(CONF_FILES
     earlyapp-setup.service
     earlyapp-setup_gst.service
     earlyapp-setup-ipu.service
+    earlyapp-setup-audio.service
     simple-egl.service
     simple-egl_resume.service)
 
