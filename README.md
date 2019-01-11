@@ -53,7 +53,6 @@ https://opensource.org/licenses/MIT
   $ src/earlyapp [options]
   ```
 
-
 ### Compilation options
  - USE_LOGOUTPUT
  : Enable detailed log output to standard out.
@@ -70,3 +69,20 @@ https://opensource.org/licenses/MIT
   ```
 
 
+## Earlyapp in UEFI environment
+
+1. Service enablement for splash video:
+
+  ```shell
+  $ sudo systemctl enable earlyapp_gst.target
+  ```
+
+2. Using camera on runtime
+
+   Pre-requisite: export XDG_RUNTIME_DIR, WAYLAND_DISPLAY and GST_PLUGIN_PATH
+
+  ```shell
+  $ src/earlyapp --use-gstreamer --camera-input test 
+  ```
+
+To use earlyapp with CBC please refer to our Early App user guide. 
