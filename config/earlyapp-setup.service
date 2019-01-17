@@ -16,3 +16,5 @@ ExecStart=/usr/bin/chmod g+rw /dev/cbc-early-signals /sys/class/gpio/gpio442/val
 # Set permissions on GPU render nodes
 ExecStart=/usr/bin/chown :render /dev/dri/renderD128
 ExecStart=/usr/bin/chmod g+rw /dev/dri/renderD128
+# Set permission to playback audio
+ExecStart=/usr/bin/usermod -a -G audio ias
