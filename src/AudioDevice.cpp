@@ -155,7 +155,7 @@ namespace earlyapp
         LINF_(TAG, "Start ALSA playback");
 
         // Prepare ALSA device.
-        if((pcm = snd_pcm_open(&pALSAHandle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0)
+        if((pcm = snd_pcm_open(&pALSAHandle, "plughw:0,0", SND_PCM_STREAM_PLAYBACK, 0)) < 0)
         {
             LERR_(TAG, "Failed to open default PCM device: " << snd_strerror(pcm));
             return;
