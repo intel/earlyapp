@@ -36,6 +36,7 @@
 
 // Log tag for AudioDevice.
 #define TAG "AUDIO"
+#define DEFAULT_PCM "plughw:0,0"
 
 namespace earlyapp
 {
@@ -155,23 +156,31 @@ namespace earlyapp
         LINF_(TAG, "Start ALSA playback");
 
         // Prepare ALSA device.
-        if((pcm = snd_pcm_open(&pALSAHandle, "plughw:0,0", SND_PCM_STREAM_PLAYBACK, 0)) < 0)
-        {
+        while(1) {
+            static int cnt = 0;
+            if((pcm = snd_pcm_open(&pALSAHandle, DEFAULT_PCM, SND_PCM_STREAM_PLAYBACK, 0)) ==  0)
+                break;
             LERR_(TAG, "Failed to open default PCM device: " << snd_strerror(pcm));
-            return;
+            if (++cnt > 16)
+                return;
+            boost::this_thread::sleep(boost::posix_time::milliseconds(200));
         }
 
-        if((pcm = snd_pcm_set_params(
-                pALSAHandle,
-                SND_PCM_FORMAT_S16_LE,
-                SND_PCM_ACCESS_RW_INTERLEAVED,
-                wavInfo.numberOfChannels,
-                wavInfo.sampleRatePerSec,
-                1,
-                50000)) < 0)
-        {
+        while(1) {
+            static int cnt = 0;
+            if((pcm = snd_pcm_set_params(
+                    pALSAHandle,
+                    SND_PCM_FORMAT_S16_LE,
+                    SND_PCM_ACCESS_RW_INTERLEAVED,
+                    wavInfo.numberOfChannels,
+                    wavInfo.sampleRatePerSec,
+                    1,
+                    50000)) == 0)
+                break;
             LERR_(TAG, "Fail to set configuration: " << snd_strerror(pcm));
-            return;
+            if (++cnt > 16)
+                return;
+            boost::this_thread::sleep(boost::posix_time::milliseconds(50));
         }
 
         while((readSize = fread(buff, 1, buffSize, fpWav)) > 0)
