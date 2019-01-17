@@ -36,7 +36,7 @@
 
 // Log tag for AudioDevice.
 #define TAG "AUDIO"
-#define DEFAULT_PCM "plughw:0,0"
+#define DEFAULT_PCM "default"
 
 namespace earlyapp
 {
@@ -156,18 +156,16 @@ namespace earlyapp
         LINF_(TAG, "Start ALSA playback");
 
         // Prepare ALSA device.
-        while(1) {
-            static int cnt = 0;
+        for (int cnt = 0; ; cnt++) {
             if((pcm = snd_pcm_open(&pALSAHandle, DEFAULT_PCM, SND_PCM_STREAM_PLAYBACK, 0)) ==  0)
                 break;
             LERR_(TAG, "Failed to open default PCM device: " << snd_strerror(pcm));
-            if (++cnt > 16)
+            if (cnt > 16) 
                 return;
             boost::this_thread::sleep(boost::posix_time::milliseconds(200));
         }
 
-        while(1) {
-            static int cnt = 0;
+        for (int cnt = 0; ; cnt++) {
             if((pcm = snd_pcm_set_params(
                     pALSAHandle,
                     SND_PCM_FORMAT_S16_LE,
@@ -178,8 +176,10 @@ namespace earlyapp
                     50000)) == 0)
                 break;
             LERR_(TAG, "Fail to set configuration: " << snd_strerror(pcm));
-            if (++cnt > 16)
+            if (cnt > 16) { 
+                snd_pcm_close(pALSAHandle);
                 return;
+            }
             boost::this_thread::sleep(boost::posix_time::milliseconds(50));
         }
 
