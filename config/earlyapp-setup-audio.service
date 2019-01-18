@@ -1,7 +1,7 @@
 [Unit]
 Description=Setup audio for Early App
 DefaultDependencies=no
-StartLimitBurst=8
+StartLimitBurst=16
 
 [Service]
 RemainAfterExit=yes
