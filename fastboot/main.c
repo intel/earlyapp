@@ -46,6 +46,43 @@ static pthread_t splash_screen_tid;
 void *splash_screen_init(void *arg);
 #endif
 
+static pthread_t load_ipu4_modules_tid;
+#define IPU4_MODULE_CONF "/usr/share/earlyapp/ipu.conf"
+void *load_ipu4_modules(void *arg)
+{
+	int ret = 0;
+	FILE *fp;
+	ssize_t nread;
+	char *line = NULL;
+	size_t len = 0;
+	char mprobe[64];
+	fp = fopen(IPU4_MODULE_CONF, "r");
+	if (!fp) {
+		ret = -1;
+		goto exit;
+	}
+	while((nread = getline(&line, &len, fp)) != -1) {
+		fprintf(stderr, "line %s", line);
+		if (nread < 2)
+			continue;
+		if (line[nread - 1] == '\n' || line[nread - 1] == '\r')
+			line[nread - 1] = 0;
+		if (nread < 32) {
+			sprintf(mprobe, "modprobe %s", line);
+			ret = system(mprobe);
+			if (ret < 0) {
+				fprintf(stderr, "faile to modprobe %s", line);
+				goto free;
+			}
+		}
+	}
+free:
+	free(line);
+	if(fp)
+	   fclose(fp);
+exit:
+	return ret;
+}
 #ifdef PRELOAD_LIST_FILE
 static pthread_t preload_tid;
 static void *preload_thread(void *arg)
@@ -135,6 +172,8 @@ int main(int argc, char *argv[])
 #ifdef PRELOAD_LIST_FILE
 	pthread_create(&preload_tid, NULL, preload_thread, NULL);
 #endif
+	pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
+	pthread_join(load_ipu4_modules_tid, NULL);
 
 #ifdef SPLASH_SCREEN_FB_FILE
 	pthread_join(splash_screen_tid, NULL);
