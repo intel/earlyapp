@@ -27,12 +27,14 @@
 SET(CONF_FILES
     earlyapp.target
     earlyapp_gst.target
+    earlyapp_gpnative.target
     earlyapp.slice
     ias-earlyapp.service
     ias-earlyapp-setup.service
     earlyapp_resume.service
     earlyapp-setup.service
     earlyapp-setup_gst.service
+    earlyapp-setup_gpnative.service
     earlyapp-setup-ipu.service
     earlyapp-setup-audio.service
     simple-egl.service
@@ -42,6 +44,7 @@ SET(CONF_FILES
 # GStreamer base devices require different settings.
 SET(EAS_TARGET earlyapp.service)
 SET(EAS_SRC
+    earlyapp_gpnative.service
     earlyapp_gst.service
     earlyapp.service)
 
