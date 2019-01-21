@@ -26,6 +26,7 @@
 SET(RES_FILES
     beep.wav
     jingle.wav
+    ipu.conf
     splash_video.mp4
     splash_video.h264
     clear_fb.fb)
