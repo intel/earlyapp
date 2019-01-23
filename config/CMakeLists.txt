@@ -38,7 +38,8 @@ SET(CONF_FILES
     earlyapp-setup-ipu.service
     earlyapp-setup-audio.service
     simple-egl.service
-    simple-egl_resume.service)
+    simple-egl_resume.service
+    mem_hot_add.service)
 
 # Early App Service file.
 # GStreamer base devices require different settings.
@@ -52,7 +53,8 @@ SET(EAS_SRC
 SET(SCRIPT_FILES
     ipu.conf
     early_audio.sh
-    kpi_gpio.sh)
+    kpi_gpio.sh
+    mem_hot_add.sh)
 
 # Install earlyapp.service
 INSTALL(FILES ${EAS_SRC}

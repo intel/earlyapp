@@ -4,7 +4,7 @@ Before=acrnd.service acrn_guest.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/bash /usr/bin/mem_hot_add.sh
+ExecStart=/usr/bin/bash /usr/share/earlyapp/mem_hot_add.sh
 Restart=no
 
 [Install]
