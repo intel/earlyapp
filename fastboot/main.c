@@ -141,6 +141,10 @@ int main(int argc, char *argv[])
 			execl(DEFAULT_INIT, DEFAULT_INIT, NULL);
 	}
 
+	/* try to load ipu4 modules AEAP */
+        pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
+        pthread_join(load_ipu4_modules_tid, NULL);
+
 	/* for kpi test */
 	if (access("/sys/class/gpio/export", R_OK) != 0) {
 		mount("/sys", "/sys", "sysfs", 0, NULL);
@@ -172,8 +176,6 @@ int main(int argc, char *argv[])
 #ifdef PRELOAD_LIST_FILE
 	pthread_create(&preload_tid, NULL, preload_thread, NULL);
 #endif
-	pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
-	pthread_join(load_ipu4_modules_tid, NULL);
 
 #ifdef SPLASH_SCREEN_FB_FILE
 	pthread_join(splash_screen_tid, NULL);
