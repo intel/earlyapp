@@ -46,42 +46,32 @@ static pthread_t splash_screen_tid;
 void *splash_screen_init(void *arg);
 #endif
 
+#define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
 static pthread_t load_ipu4_modules_tid;
-#define IPU4_MODULE_CONF "/usr/share/earlyapp/ipu.conf"
+char *ipu4_modulesp[]  = { 
+	"crlmodule-lite",
+	"intel-ipu4",
+	"intel-ipu4-mmu",
+	"intel-ipu4-psys",
+	"ici-isys-mod",
+	"intel-ipu4-psys-csslib",
+	"intel-ipu4-isys-csslib",
+};
+
 void *load_ipu4_modules(void *arg)
 {
-	int ret = 0;
-	FILE *fp;
-	ssize_t nread;
-	char *line = NULL;
-	size_t len = 0;
+	int len = ARRAY_SIZE(ipu4_modulesp);
 	char mprobe[64];
-	fp = fopen(IPU4_MODULE_CONF, "r");
-	if (!fp) {
-		ret = -1;
-		goto exit;
+	int ret;
+
+	for( int i= 0; i < len; i++) {
+		//fprintf(stderr, "modprobe %s", ipu4_modulesp[i]);
+		sprintf(mprobe, "modprobe %s", ipu4_modulesp[i]);
+		ret = system(mprobe);
+		if (ret < 0)
+			fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[i]);
+
 	}
-	while((nread = getline(&line, &len, fp)) != -1) {
-		fprintf(stderr, "line %s", line);
-		if (nread < 2)
-			continue;
-		if (line[nread - 1] == '\n' || line[nread - 1] == '\r')
-			line[nread - 1] = 0;
-		if (nread < 32) {
-			sprintf(mprobe, "modprobe %s", line);
-			ret = system(mprobe);
-			if (ret < 0) {
-				fprintf(stderr, "faile to modprobe %s", line);
-				goto free;
-			}
-		}
-	}
-free:
-	free(line);
-	if(fp)
-	   fclose(fp);
-exit:
-	return ret;
 }
 #ifdef PRELOAD_LIST_FILE
 static pthread_t preload_tid;
@@ -136,10 +126,14 @@ int main(int argc, char *argv[])
 	int ret;
 	char buf[8];
 
+
 	if (getpid() == 1) {
 		if (fork())
 			execl(DEFAULT_INIT, DEFAULT_INIT, NULL);
 	}
+
+        pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
+        pthread_join(load_ipu4_modules_tid, NULL);
 
 	/* for kpi test */
 	if (access("/sys/class/gpio/export", R_OK) != 0) {
@@ -172,8 +166,6 @@ int main(int argc, char *argv[])
 #ifdef PRELOAD_LIST_FILE
 	pthread_create(&preload_tid, NULL, preload_thread, NULL);
 #endif
-	pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
-	pthread_join(load_ipu4_modules_tid, NULL);
 
 #ifdef SPLASH_SCREEN_FB_FILE
 	pthread_join(splash_screen_tid, NULL);
