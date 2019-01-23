@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
 			execl(DEFAULT_INIT, DEFAULT_INIT, NULL);
 	}
 
+	/* try to load ipu4 modules AEAP */
         pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
         pthread_join(load_ipu4_modules_tid, NULL);
 
