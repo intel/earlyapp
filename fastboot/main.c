@@ -83,6 +83,21 @@ free:
 exit:
 	return ret;
 }
+
+#ifdef EARLY_AUDIO_CMD
+static pthread_t early_audio_tid;
+void *setup_early_audio(void *arg)
+{
+	int ret = 0;
+	ret = system(EARLY_AUDIO_CMD);
+	if (ret < 0) {
+		fprintf(stderr, "faile to setup early audio - %s",
+				EARLY_AUDIO_CMD);
+	}
+	return NULL;
+}
+#endif
+
 #ifdef PRELOAD_LIST_FILE
 static pthread_t preload_tid;
 static void *preload_thread(void *arg)
@@ -172,6 +187,11 @@ int main(int argc, char *argv[])
 #ifdef PRELOAD_LIST_FILE
 	pthread_create(&preload_tid, NULL, preload_thread, NULL);
 #endif
+
+#ifdef EARLY_AUDIO_CMD
+	pthread_create(&early_audio_tid, NULL, setup_early_audio, NULL);
+#endif
+
 	pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
 	pthread_join(load_ipu4_modules_tid, NULL);
 
@@ -183,5 +203,8 @@ int main(int argc, char *argv[])
 	pthread_join(preload_tid, NULL);
 #endif
 
+#ifdef EARLY_AUDIO_CMD
+	pthread_join(early_audio_tid, NULL);
+#endif
 	return 0;
 }
