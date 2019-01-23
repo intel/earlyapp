@@ -2,7 +2,6 @@
 Description=GP2.0 Early application
 DefaultDependencies=no
 Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup.service earlyapp-setup-ipu.service
-Wants=earlyapp-setup-audio.service
 After=ias-earlyapp.service cbc_attach.service earlyapp-setup.service earlyapp-setup-ipu.service
 
 [Service]
