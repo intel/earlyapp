@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
         pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
         pthread_join(load_ipu4_modules_tid, NULL);
 	pthread_create(&load_ipu4_crlmodule_lite_tid, NULL, load_ipu4_crlmodule_lite, NULL);
-	pthread_join(&load_ipu4_crlmodule_lite_tid, NULL);
+	pthread_join(load_ipu4_crlmodule_lite_tid, NULL);
 	/* for kpi test */
 	if (access("/sys/class/gpio/export", R_OK) != 0) {
 		mount("/sys", "/sys", "sysfs", 0, NULL);
