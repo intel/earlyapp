@@ -48,6 +48,7 @@ void *splash_screen_init(void *arg);
 
 #define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
 static pthread_t load_ipu4_modules_tid;
+static pthread_t load_ipu4_crlmodule_lite_tid;
 char *ipu4_modulesp[]  = { 
 	"crlmodule-lite",
 	"intel-ipu4",
@@ -58,13 +59,25 @@ char *ipu4_modulesp[]  = {
 	"intel-ipu4-isys-csslib",
 };
 
+void *load_ipu4_crlmodule_lite(void *arg)
+{
+	int ret;
+	char mprobe[64];
+	sprintf(mprobe, "modprobe %s", ipu4_modulesp[0]);
+	ret = system(mprobe);
+	if (ret < 0)
+		fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[0]);
+	return NULL;
+}
+
+
 void *load_ipu4_modules(void *arg)
 {
 	int len = ARRAY_SIZE(ipu4_modulesp);
 	char mprobe[64];
 	int ret;
 
-	for( int i= 0; i < len; i++) {
+	for( int i= 1; i < len; i++) {
 		//fprintf(stderr, "modprobe %s", ipu4_modulesp[i]);
 		sprintf(mprobe, "modprobe %s", ipu4_modulesp[i]);
 		ret = system(mprobe);
@@ -136,7 +149,8 @@ int main(int argc, char *argv[])
 	/* try to load ipu4 modules AEAP */
         pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
         pthread_join(load_ipu4_modules_tid, NULL);
-
+	pthread_create(&load_ipu4_crlmodule_lite_tid, NULL, load_ipu4_crlmodule_lite, NULL);
+	pthread_join(&load_ipu4_crlmodule_lite_tid, NULL);
 	/* for kpi test */
 	if (access("/sys/class/gpio/export", R_OK) != 0) {
 		mount("/sys", "/sys", "sysfs", 0, NULL);
