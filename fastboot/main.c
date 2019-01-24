@@ -72,6 +72,7 @@ void *load_ipu4_modules(void *arg)
 			fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[i]);
 
 	}
+	return NULL;
 }
 #ifdef PRELOAD_LIST_FILE
 static pthread_t preload_tid;
