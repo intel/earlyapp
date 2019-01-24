@@ -1,0 +1,19 @@
+[Unit]
+Description=Early App service file for Gordon Peak native.
+DefaultDependencies=no
+Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup_gpnative.service
+Wants=earlyapp-setup-audio.service
+After=ias-earlyapp.service cbc_attach.service earlyapp-setup_gpnative.service
+
+[Service]
+Environment=XDG_RUNTIME_DIR=/run/ias
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=GST_PLUGIN_PATH=/usr/lib/gstreamer-1.0
+ExecStart=/usr/bin/earlyapp --rvc-sound /usr/share/earlyapp/beep.wav --use-gstreamer --bootup-sound /usr/share/earlyapp/jingle.wav --splash-video /usr/share/earlyapp/splash_video.mp4 --gstcamcmd "icamerasrc device-name=mondello-3 input-height=480 input-width=720 input-format=UYVY deinterlace-method=3 interlace-mode=7 ! 'video/x-raw,format=NV12,height=1080,width=1920' ! vaapipostproc !  waylandsink"
+
+Slice=earlyapp.slice
+User=ias
+SupplementaryGroups=video render
+
+[Install]
+Alias=earlyapp.service
