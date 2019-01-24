@@ -47,7 +47,6 @@ SET(EAS_SRC
 
 # Script files.
 SET(SCRIPT_FILES
-    ipu.conf
     kpi_gpio.sh)
 
 # Install earlyapp.service
