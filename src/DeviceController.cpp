@@ -44,7 +44,7 @@
 #include "GstAudioDevice.hpp"
 #include "GstVideoDevice.hpp"
 #include "GstCameraDevice.hpp"
-
+#include <pthread.h>
 
 // A tag for DeviceController.
 #define TAG "DCTL"
@@ -64,6 +64,12 @@ namespace earlyapp
     {
         m_pConf = pConf;
         m_pSST = pSST;
+    }
+
+    void * DeviceController::init_device(void *param)
+    {
+        ((OutputDevice *)param)->init(s_pConf);
+        return ((void *)0);
     }
 
     /*
@@ -110,11 +116,18 @@ namespace earlyapp
         dmesgLogPrint("EA: Got Wayland compositor socket.");
 #endif
 
+        s_pConf = m_pConf;
+        int i = 0;
         // Initalize devices.
         for(auto& it: m_Devs)
         {
             LINF_(TAG, it->deviceName());
-            it->init(m_pConf);
+            pthread_create(&s_initdev_tid[i++], NULL, init_device, (void *)it);
+        }
+
+        for (int j = 0; j < i; j++)
+        {
+            pthread_join(s_initdev_tid[j], NULL);
         }
 
 #ifdef USE_DMESGLOG
