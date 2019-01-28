@@ -46,42 +46,103 @@ static pthread_t splash_screen_tid;
 void *splash_screen_init(void *arg);
 #endif
 
+#define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
 static pthread_t load_ipu4_modules_tid;
-#define IPU4_MODULE_CONF "/usr/share/earlyapp/ipu.conf"
+static pthread_t load_ipu4_crlmodule_lite_tid;
+static pthread_t load_ipu4_isys_csslib_tid;
+static pthread_t load_ipu4_psys_csslib_tid;
+static pthread_t load_ipu4_mmu_tid;
+static pthread_t load_ipu4_psys_tid;
+static pthread_t load_ipu4_isys_tid;
+char *ipu4_modulesp[]  = { 
+	"crlmodule-lite",
+	"intel-ipu4",
+	"intel-ipu4-mmu",
+	"intel-ipu4-psys",
+	"ici-isys-mod",
+	"intel-ipu4-psys-csslib",
+	"intel-ipu4-isys-csslib",
+};
+
+void *load_ipu4_mmu(void *arg)
+{
+	int ret;
+	char mprobe[64];
+	sprintf(mprobe, "modprobe %s", ipu4_modulesp[2]);
+	ret = system(mprobe);
+	if (ret < 0)
+		fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[2]);
+	return NULL;
+}
+
+void *load_ipu4_psys(void *arg)
+{
+	int ret;
+	char mprobe[64];
+	sprintf(mprobe, "modprobe %s", ipu4_modulesp[3]);
+	ret = system(mprobe);
+	if (ret < 0)
+		fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[3]);
+	return NULL;
+}
+
+
+void *load_ipu4_isys(void *arg)
+{
+	int ret;
+	char mprobe[64];
+	sprintf(mprobe, "modprobe %s", ipu4_modulesp[4]);
+	ret = system(mprobe);
+	if (ret < 0)
+		fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[4]);
+	return NULL;
+}
+
+
+void *load_ipu4_crlmodule_lite(void *arg)
+{
+	int ret;
+	char mprobe[64];
+	sprintf(mprobe, "modprobe %s", ipu4_modulesp[0]);
+	ret = system(mprobe);
+	if (ret < 0)
+		fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[0]);
+	return NULL;
+}
+
+void *load_ipu4_isys_csslib(void *arg)
+{
+	int ret;
+	char mprobe[64];
+	sprintf(mprobe, "modprobe %s", ipu4_modulesp[6]);
+	ret = system(mprobe);
+	if (ret < 0)
+		fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[6]);
+	return NULL;
+}
+
+void *load_ipu4_psys_csslib(void *arg)
+{
+	int ret;
+	char mprobe[64];
+	sprintf(mprobe, "modprobe %s", ipu4_modulesp[5]);
+	ret = system(mprobe);
+	if (ret < 0)
+		fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[5]);
+	return NULL;
+}
+
 void *load_ipu4_modules(void *arg)
 {
-	int ret = 0;
-	FILE *fp;
-	ssize_t nread;
-	char *line = NULL;
-	size_t len = 0;
 	char mprobe[64];
-	fp = fopen(IPU4_MODULE_CONF, "r");
-	if (!fp) {
-		ret = -1;
-		goto exit;
-	}
-	while((nread = getline(&line, &len, fp)) != -1) {
-		fprintf(stderr, "line %s", line);
-		if (nread < 2)
-			continue;
-		if (line[nread - 1] == '\n' || line[nread - 1] == '\r')
-			line[nread - 1] = 0;
-		if (nread < 32) {
-			sprintf(mprobe, "modprobe %s", line);
-			ret = system(mprobe);
-			if (ret < 0) {
-				fprintf(stderr, "faile to modprobe %s", line);
-				goto free;
-			}
-		}
-	}
-free:
-	free(line);
-	if(fp)
-	   fclose(fp);
-exit:
-	return ret;
+	int ret;
+
+	sprintf(mprobe, "modprobe %s", ipu4_modulesp[1]);
+	ret = system(mprobe);
+	if (ret < 0) 
+		fprintf(stderr, "faile to modprobe %s", ipu4_modulesp[1]);
+
+	return NULL;
 }
 
 #ifdef EARLY_AUDIO_CMD
@@ -151,11 +212,20 @@ int main(int argc, char *argv[])
 	int ret;
 	char buf[8];
 
+
 	if (getpid() == 1) {
 		if (fork())
 			execl(DEFAULT_INIT, DEFAULT_INIT, NULL);
 	}
 
+       /* try to load ipu4 modules AEAP */
+        pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
+        pthread_create(&load_ipu4_crlmodule_lite_tid, NULL, load_ipu4_crlmodule_lite, NULL);
+        pthread_create(&load_ipu4_isys_csslib_tid, NULL, load_ipu4_isys_csslib, NULL);
+        pthread_create(&load_ipu4_psys_csslib_tid, NULL, load_ipu4_psys_csslib, NULL);
+	pthread_create(&load_ipu4_mmu_tid,  NULL, load_ipu4_mmu, NULL);
+	pthread_create(&load_ipu4_psys_tid,  NULL, load_ipu4_psys, NULL);
+	pthread_create(&load_ipu4_isys_tid,  NULL, load_ipu4_isys, NULL);
 	/* for kpi test */
 	if (access("/sys/class/gpio/export", R_OK) != 0) {
 		mount("/sys", "/sys", "sysfs", 0, NULL);
@@ -192,9 +262,14 @@ int main(int argc, char *argv[])
 	pthread_create(&early_audio_tid, NULL, setup_early_audio, NULL);
 #endif
 
-	pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
+/* try to load ipu4 modules AEAP */
 	pthread_join(load_ipu4_modules_tid, NULL);
-
+	pthread_join(load_ipu4_crlmodule_lite_tid, NULL);
+	pthread_join(load_ipu4_isys_csslib_tid, NULL);
+	pthread_join(load_ipu4_psys_csslib_tid, NULL);
+	pthread_join(load_ipu4_mmu_tid, NULL);
+        pthread_join(load_ipu4_psys_tid,  NULL);
+        pthread_join(load_ipu4_isys_tid,  NULL);
 #ifdef SPLASH_SCREEN_FB_FILE
 	pthread_join(splash_screen_tid, NULL);
 #endif

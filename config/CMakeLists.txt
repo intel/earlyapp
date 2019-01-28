@@ -50,7 +50,6 @@ SET(EAS_SRC
 
 # Script files.
 SET(SCRIPT_FILES
-    ipu.conf
     early_audio.sh
     kpi_gpio.sh
     mem_hot_add.sh)
