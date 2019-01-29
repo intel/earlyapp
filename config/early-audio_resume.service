@@ -1,0 +1,8 @@
+[Unit]
+After=suspend.target
+
+[Service]
+ExecStart=/usr/bin/aplay /usr/share/earlyapp/beep.wav
+
+[Install]
+WantedBy=suspend.target
