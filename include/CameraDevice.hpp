@@ -100,8 +100,6 @@ namespace earlyapp
 
         int m_stream_id = -1;
 
-        int m_ICIEnabled = 1;
-
         /*
           Boost thread.
          */
