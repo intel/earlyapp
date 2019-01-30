@@ -231,13 +231,26 @@ int main(int argc, char *argv[])
 	}
 
        /* try to load ipu4 modules AEAP */
-        pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
-        pthread_create(&load_ipu4_crlmodule_lite_tid, NULL, load_ipu4_crlmodule_lite, NULL);
-        pthread_create(&load_ipu4_isys_csslib_tid, NULL, load_ipu4_isys_csslib, NULL);
-        pthread_create(&load_ipu4_psys_csslib_tid, NULL, load_ipu4_psys_csslib, NULL);
-	pthread_create(&load_ipu4_mmu_tid,  NULL, load_ipu4_mmu, NULL);
-	pthread_create(&load_ipu4_psys_tid,  NULL, load_ipu4_psys, NULL);
-	pthread_create(&load_ipu4_isys_tid,  NULL, load_ipu4_isys, NULL);
+	pid_t pid = fork();
+	if (pid < 0)
+		fprintf(stderr, "fork ipu4 pid error\n");
+        else if (pid == 0) {
+		pthread_create(&load_ipu4_modules_tid, NULL, load_ipu4_modules, NULL);
+		pthread_create(&load_ipu4_crlmodule_lite_tid, NULL, load_ipu4_crlmodule_lite, NULL);
+		pthread_create(&load_ipu4_isys_csslib_tid, NULL, load_ipu4_isys_csslib, NULL);
+		pthread_create(&load_ipu4_psys_csslib_tid, NULL, load_ipu4_psys_csslib, NULL);
+		pthread_create(&load_ipu4_mmu_tid,  NULL, load_ipu4_mmu, NULL);
+		pthread_create(&load_ipu4_psys_tid,  NULL, load_ipu4_psys, NULL);
+		pthread_create(&load_ipu4_isys_tid,  NULL, load_ipu4_isys, NULL);
+		pthread_join(load_ipu4_modules_tid, NULL);
+		pthread_join(load_ipu4_crlmodule_lite_tid, NULL);
+		pthread_join(load_ipu4_isys_csslib_tid, NULL);
+		pthread_join(load_ipu4_psys_csslib_tid, NULL);
+		pthread_join(load_ipu4_mmu_tid, NULL);
+		pthread_join(load_ipu4_psys_tid,  NULL);
+		pthread_join(load_ipu4_isys_tid,  NULL);
+		return 0;
+	}
 	/* for kpi test */
 	if (access("/sys/class/gpio/export", R_OK) != 0) {
 		mount("/sys", "/sys", "sysfs", 0, NULL);
@@ -278,14 +291,6 @@ int main(int argc, char *argv[])
 	pthread_create(&cbc_attach_tid, NULL, cbc_attach_init, NULL);
 #endif
 
-/* try to load ipu4 modules AEAP */
-	pthread_join(load_ipu4_modules_tid, NULL);
-	pthread_join(load_ipu4_crlmodule_lite_tid, NULL);
-	pthread_join(load_ipu4_isys_csslib_tid, NULL);
-	pthread_join(load_ipu4_psys_csslib_tid, NULL);
-	pthread_join(load_ipu4_mmu_tid, NULL);
-        pthread_join(load_ipu4_psys_tid,  NULL);
-        pthread_join(load_ipu4_isys_tid,  NULL);
 #ifdef CBC_ATTACH
 	pthread_join(cbc_attach_tid, NULL);
 #endif
