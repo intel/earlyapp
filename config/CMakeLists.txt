@@ -39,6 +39,7 @@ SET(CONF_FILES
     simple-egl.service
     simple-egl_resume.service
     cbc_attach.service
+    early-audio_resume.service
     mem_hot_add.service)
 
 # Early App Service file.
