@@ -38,6 +38,7 @@ SET(CONF_FILES
     earlyapp-setup-ipu.service
     simple-egl.service
     simple-egl_resume.service
+    cbc_attach.service
     mem_hot_add.service)
 
 # Early App Service file.

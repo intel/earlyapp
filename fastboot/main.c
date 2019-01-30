@@ -45,6 +45,18 @@
 static pthread_t splash_screen_tid;
 void *splash_screen_init(void *arg);
 #endif
+#define CBC_ATTACH
+#ifdef CBC_ATTACH
+static pthread_t cbc_attach_tid;
+void *cbc_attach_init(void *arg)
+{
+	int ret;
+	ret = system("/usr/bin/cbc_attach");
+	if (ret < 0)
+		fprintf(stderr, "failed to cbc attach\n");
+	return NULL;
+}
+#endif
 
 #define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
 static pthread_t load_ipu4_modules_tid;
@@ -262,6 +274,10 @@ int main(int argc, char *argv[])
 	pthread_create(&early_audio_tid, NULL, setup_early_audio, NULL);
 #endif
 
+#ifdef CBC_ATTACH
+	pthread_create(&cbc_attach_tid, NULL, cbc_attach_init, NULL);
+#endif
+
 /* try to load ipu4 modules AEAP */
 	pthread_join(load_ipu4_modules_tid, NULL);
 	pthread_join(load_ipu4_crlmodule_lite_tid, NULL);
@@ -270,6 +286,9 @@ int main(int argc, char *argv[])
 	pthread_join(load_ipu4_mmu_tid, NULL);
         pthread_join(load_ipu4_psys_tid,  NULL);
         pthread_join(load_ipu4_isys_tid,  NULL);
+#ifdef CBC_ATTACH
+	pthread_join(cbc_attach_tid, NULL);
+#endif
 #ifdef SPLASH_SCREEN_FB_FILE
 	pthread_join(splash_screen_tid, NULL);
 #endif
