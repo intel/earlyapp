@@ -28,6 +28,8 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include <drm_fourcc.h>
 #include <intel_bufmgr.h>
 
+#include <unistd.h>
+
 #define MFX_PCI_DIR "/sys/bus/pci/devices"
 #define MFX_DRI_DIR "/dev/dri/"
 #define MFX_PCI_DISPLAY_CONTROLLER_CLASS 0x03
@@ -146,7 +148,7 @@ DRMLibVA::DRMLibVA(int type)
     int adapters_num = mfx_init_adapters(&adapters);
 
     // Search for the required display adapter
-    int i = 0, nFoundAdapters = 0;
+    int i = 0, j = 0, nFoundAdapters = 0;
     int nodesNumbers[] = {0,0};
     while ((i < adapters_num) && (nFoundAdapters != numberOfRequiredIntelAdapter))
     {
@@ -199,8 +201,14 @@ DRMLibVA::DRMLibVA(int type)
 
         if (MFX_ERR_NONE == sts)
         {
-            va_res = m_libva.vaInitialize(m_va_dpy, &major_version, &minor_version);
-            sts = va_to_mfx_status(va_res);
+            j = 0;
+            do
+            {
+                va_res = m_libva.vaInitialize(m_va_dpy, &major_version, &minor_version);
+                sts = va_to_mfx_status(va_res);
+                usleep(10000);
+            }while (MFX_ERR_NONE != sts && j++ < 16);
+
             if (MFX_ERR_NONE != sts)
             {
                 close(m_fd);
