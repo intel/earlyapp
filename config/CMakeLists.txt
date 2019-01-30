@@ -53,6 +53,7 @@ SET(EAS_SRC
 # Script files.
 SET(SCRIPT_FILES
     early_audio.sh
+    early_cbc.sh
     kpi_gpio.sh
     mem_hot_add.sh)
 

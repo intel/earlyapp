@@ -1,8 +1,8 @@
 [Unit]
 Description=GP2.0 Early application
 DefaultDependencies=no
-Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup.service earlyapp-setup-ipu.service
-After=ias-earlyapp.service cbc_attach.service earlyapp-setup.service earlyapp-setup-ipu.service
+Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup.service
+After=ias-earlyapp.service cbc_attach.service earlyapp-setup.service
 
 [Service]
 Environment=XDG_RUNTIME_DIR=/run/ias

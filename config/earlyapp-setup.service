@@ -11,7 +11,7 @@ Slice=earlyapp.slice
 # Initialize GPIO device node
 ExecStart=/usr/share/earlyapp/kpi_gpio.sh 442
 # Set permissions on CBC and GPIO device nodes
-ExecStart=/usr/bin/chown :ias /dev/cbc-early-signals /sys/class/gpio/gpio442/value
+ExecStart=/usr/share/earlyapp/early_cbc.sh
 ExecStart=/usr/bin/chmod g+rw /dev/cbc-early-signals /sys/class/gpio/gpio442/value
 # Set permissions on GPU render nodes
 ExecStart=/usr/bin/chown :render /dev/dri/renderD128
