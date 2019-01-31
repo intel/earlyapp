@@ -142,7 +142,7 @@ static int xioctl(int fh, int request, void *arg)
 	return r;
 }
 
-static int open_pipe_device(void)
+static int open_pipe_device(bool w4pipeline)
 {
 	struct stat st;
 	char dev_name[256];
@@ -150,18 +150,9 @@ static int open_pipe_device(void)
 		return 1;
 	sprintf(dev_name, "/dev/%s", ICI_PIPELINE_DEVICE_NAME);
 	printf("Opening device \"%s\"...\n", dev_name);
-
-	if (-1 == stat(dev_name, &st)) {
-		fprintf(stderr, "Cannot identify '%s': %d, %s\n", dev_name,
-			errno, strerror(errno));
-		return 0;
+	while (w4pipeline && (access(dev_name, R_OK) != 0)) {
+		usleep(1000);
 	}
-
-	if (!S_ISCHR(st.st_mode)) {
-		fprintf(stderr, "%s is no device\n", dev_name);
-		return 0;
-	}
-
 	fd = open(dev_name, O_RDWR /* required */ | O_NONBLOCK, 0);
 
 	if (-1 == fd) {
@@ -295,7 +286,7 @@ void get_node_list()
 	struct ici_node_desc node_info_count = {0};
 	struct ici_node_desc *node_info;
 
-	if(open_pipe_device())
+	if(open_pipe_device(false))
         {
             node_info_count.node_id = -1;
             if (xioctl(fd, ICI_IOC_ENUM_NODES, &node_info_count) == -1 ) {
@@ -503,7 +494,7 @@ static void do_setformat(char *opt_arg)
 	get_arg_val(opt_arg, "ffmt:", ']', arg_name);
 	parse_formats(arg_name, &pad_props.ffmt);
 
-	if(open_pipe_device())
+	if(open_pipe_device(false))
         {
             set_pad_format(fd, &pad_props);
         }
@@ -576,7 +567,7 @@ void do_setlink(char *opt_arg)
 	link_desc.sink.node_id = find_node_by_name(toks[2]);
 	link_desc.sink.pad_idx = get_pad_id(toks[3]);
 
-        if(open_pipe_device())
+        if(open_pipe_device(false))
         {
             set_link(fd, &link_desc, 0);
         }
@@ -604,10 +595,10 @@ void parse_args(char argc, char *strtext)
 	}
 }
 
-int ConfigureICI()
+int ConfigureICI(bool w4pipline)
 {
 	// this configuration is for GP2.0 ici
-    if(open_pipe_device())
+    if(open_pipe_device(w4pipline))
     {
         parse_args('r',"");
         parse_args('f',"Intel IPU4 CSI2 BE SOC 0:0 [ffmt:720x240,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");

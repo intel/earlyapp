@@ -36,6 +36,8 @@
 // A log tag for Camera device
 #define TAG "CAMERA"
 
+extern int m_ICIEnabled;
+
 namespace earlyapp
 {
     /*
@@ -75,10 +77,10 @@ namespace earlyapp
     void CameraDevice::init(std::shared_ptr<Configuration> pConf)
     {
         OutputDevice::init(pConf);
-
+	m_ICIEnabled = 1;
         m_pConf = pConf;
 
-        m_ICIEnabled = ConfigureICI();
+        m_ICIEnabled = ConfigureICI(false);
         strcpy(m_iciParam.stream, "/dev/intel_stream27");
 
         // Set output width/height with user set values.
@@ -124,18 +126,19 @@ namespace earlyapp
     void CameraDevice::play(void)
     {
         LINF_(TAG, "CameraDevice play");
-        if(m_ICIEnabled)
-        {
-            // Create a thread for the camera dispaly and run.
-                m_pThreadGrpRVC = new(boost::thread_group);
-                m_pThreadRVC = m_pThreadGrpRVC->create_thread(
-                    boost::bind(
-                        &displayCamera, m_iciParam, m_stream_id, m_pGPIOClass));
-        }
-        else
-        {
-            LINF_(TAG, "Fail CameraDevice play...");
-        }
+	/*pipeline may still not be ready because module loaded is quite late
+	* try it again. next time we till try it in iciStartDisplay,
+	* which will wait till device is ready
+	*/
+	if (!m_ICIEnabled) {
+		fprintf(stderr, "Camera still not ready before play!\n");
+		m_ICIEnabled = ConfigureICI(false);
+	}
+	// Create a thread for the camera dispaly and run.
+	m_pThreadGrpRVC = new(boost::thread_group);
+	m_pThreadRVC = m_pThreadGrpRVC->create_thread(
+			boost::bind(
+			&displayCamera, m_iciParam, m_stream_id, m_pGPIOClass));
     }
 
     /*
@@ -144,7 +147,7 @@ namespace earlyapp
     void CameraDevice::stop(void)
     {
         LINF_(TAG, "Stopping camera...");
-	    if(m_ICIEnabled)
+	if(m_ICIEnabled)
         {
             iciStopDisplay(0);
             // Wait for thread join.
@@ -177,7 +180,7 @@ namespace earlyapp
     {
         LINF_(TAG, "Display loop.");
 
-        iciStartDisplay(m_iciParam, stream_id, 1, GPIOClass);
+        iciStartDisplay(m_iciParam, stream_id, 1, GPIOClass, &m_ICIEnabled);
     }
 
 } // namespace

@@ -27,6 +27,6 @@
 #ifndef _PIPELINE_CFG_H_
 #define _PIPELINE_CFG_H_
 
-int ConfigureICI(void);
+int ConfigureICI(bool);
 
 #endif

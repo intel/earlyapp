@@ -54,7 +54,7 @@ struct timeval *curr_time, *prev_time;
 int pixelformat;
 
 int stream_id=-1;
-
+int m_ICIEnabled = 1;
 struct wl_display *g_display_connection = NULL;
 
 static void polling_thread(void *data)
@@ -229,7 +229,7 @@ int disconnectWlConnection(void)
 	return 0;
 }
 
-int iciStartDisplay(struct setup param, int io_stream_id, int start, void *gpioclass)
+int iciStartDisplay(struct setup param, int io_stream_id, int start, void *gpioclass, int *ici_rdy)
 {
 	GET_TS(time_measurements.app_start_time);
 
@@ -242,6 +242,12 @@ int iciStartDisplay(struct setup param, int io_stream_id, int start, void *gpioc
 	char wayland_path[255];
 	unsigned long buf_size = 0;
 	int dev_fd;
+	/* if ici still not ready let us wait it till ready*/
+	/* with new earlyapp-fastboot, ipu4 modules will finish init
+	 * in 950ms after kernel start
+	 * */
+	if (!(*ici_rdy))
+		*ici_rdy = ConfigureICI(true);
 
 	stream_id = io_stream_id;
 	format_setup(&s);
