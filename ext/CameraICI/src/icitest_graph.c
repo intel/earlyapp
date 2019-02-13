@@ -406,13 +406,13 @@ void redraw_egl_way(struct window *window, struct buffer *buf,
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	wl_surface_set_opaque_region(window->surface, NULL);
+	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
 
 	if(g_triggerOnce && g_GpioClass)
 	{
 		GPIOControl_outputPattern(g_GpioClass);
 		g_triggerOnce = 0;
 	}
-	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
 	if (first_frame_received == 1 && first_frame_rendered == 0) {
 		first_frame_rendered = 1;
 		GET_TS(time_measurements.first_frame_rendered_time);
