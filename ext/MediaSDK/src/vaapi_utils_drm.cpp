@@ -206,7 +206,8 @@ DRMLibVA::DRMLibVA(int type)
             {
                 va_res = m_libva.vaInitialize(m_va_dpy, &major_version, &minor_version);
                 sts = va_to_mfx_status(va_res);
-                usleep(10000);
+                if (MFX_ERR_NONE != sts)
+		    usleep(10000);
             }while (MFX_ERR_NONE != sts && j++ < 16);
 
             if (MFX_ERR_NONE != sts)
