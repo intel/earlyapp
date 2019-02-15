@@ -38,7 +38,9 @@
 namespace earlyapp
 {
 	static std::shared_ptr<Configuration> s_pConf;
-	static pthread_t s_initdev_tid[8];
+	static pthread_t init_aud_tid;
+	static pthread_t init_vid_tid;
+	static pthread_t init_cam_tid;
     /**
        @brief Controls output device for current state.
     */

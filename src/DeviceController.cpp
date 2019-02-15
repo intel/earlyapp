@@ -116,19 +116,15 @@ namespace earlyapp
         dmesgLogPrint("EA: Got Wayland compositor socket.");
 #endif
 
-        s_pConf = m_pConf;
-        int i = 0;
         // Initalize devices.
-        for(auto& it: m_Devs)
-        {
-            LINF_(TAG, it->deviceName());
-            pthread_create(&s_initdev_tid[i++], NULL, init_device, (void *)it);
-        }
+        s_pConf = m_pConf;
+        pthread_create(&init_aud_tid, NULL, init_device, (void *)m_pAud);
+        pthread_create(&init_vid_tid, NULL, init_device, (void *)m_pVid);
+        pthread_create(&init_cam_tid, NULL, init_device, (void *)m_pCam);
 
-        for (int j = 0; j < i; j++)
-        {
-            pthread_join(s_initdev_tid[j], NULL);
-        }
+        // left to join video thread when really playing it
+        pthread_join(init_aud_tid, NULL);
+        pthread_join(init_cam_tid, NULL);
 
 #ifdef USE_DMESGLOG
         dmesgLogPrint("EA: Devices initialized");
@@ -194,6 +190,7 @@ namespace earlyapp
                 // Video device.
                 if(m_pVid != nullptr)
                 {
+                    pthread_join(init_vid_tid, NULL);
                     m_pVid->preparePlay(nullptr);
                     m_pVid->play();
                     // The VideoDevice will be held until it gets EOS.
