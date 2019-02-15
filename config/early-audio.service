@@ -1,0 +1,9 @@
+[Unit]
+Description=GP2.0 Early Audio
+Before=systemd-modules-load.service
+
+[Service]
+ExecStart=/usr/share/earlyapp/early_audio.sh noplay
+
+[Install]
+WantedBy=basic.target

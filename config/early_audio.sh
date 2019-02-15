@@ -21,4 +21,4 @@ do
 done
 
 # early audio test
-aplay -Dplughw:0,0 `dirname $0`/jingle.wav --duration 1
+[ "$1" = "noplay" ] || aplay -Dplughw:0,0 `dirname $0`/jingle.wav --duration 1
