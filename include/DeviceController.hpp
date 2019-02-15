@@ -33,10 +33,14 @@
 #include "OutputDevice.hpp"
 #include "Configuration.hpp"
 #include "SystemStatusTracker.hpp"
-
+#include <pthread.h>
 
 namespace earlyapp
 {
+	static std::shared_ptr<Configuration> s_pConf;
+	static pthread_t init_aud_tid;
+	static pthread_t init_vid_tid;
+	static pthread_t init_cam_tid;
     /**
        @brief Controls output device for current state.
     */
@@ -97,6 +101,7 @@ namespace earlyapp
         */
         int numDevices(void);
 
+        static void * init_device(void *param);
     private:
         /**
            @brief A flag for initialization.
