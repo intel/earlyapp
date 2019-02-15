@@ -242,6 +242,14 @@ int main(int argc, char *argv[])
 		pthread_create(&load_ipu4_mmu_tid,  NULL, load_ipu4_mmu, NULL);
 		pthread_create(&load_ipu4_psys_tid,  NULL, load_ipu4_psys, NULL);
 		pthread_create(&load_ipu4_isys_tid,  NULL, load_ipu4_isys, NULL);
+#ifdef CBC_ATTACH
+		pthread_create(&cbc_attach_tid, NULL, cbc_attach_init, NULL);
+#endif
+
+#ifdef CBC_ATTACH
+		pthread_join(cbc_attach_tid, NULL);
+#endif
+
 		pthread_join(load_ipu4_modules_tid, NULL);
 		pthread_join(load_ipu4_crlmodule_lite_tid, NULL);
 		pthread_join(load_ipu4_isys_csslib_tid, NULL);
@@ -287,13 +295,6 @@ int main(int argc, char *argv[])
 	pthread_create(&early_audio_tid, NULL, setup_early_audio, NULL);
 #endif
 
-#ifdef CBC_ATTACH
-	pthread_create(&cbc_attach_tid, NULL, cbc_attach_init, NULL);
-#endif
-
-#ifdef CBC_ATTACH
-	pthread_join(cbc_attach_tid, NULL);
-#endif
 #ifdef SPLASH_SCREEN_FB_FILE
 	pthread_join(splash_screen_tid, NULL);
 #endif
