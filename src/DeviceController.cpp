@@ -44,7 +44,7 @@
 #include "GstAudioDevice.hpp"
 #include "GstVideoDevice.hpp"
 #include "GstCameraDevice.hpp"
-
+#include <pthread.h>
 
 // A tag for DeviceController.
 #define TAG "DCTL"
@@ -64,6 +64,12 @@ namespace earlyapp
     {
         m_pConf = pConf;
         m_pSST = pSST;
+    }
+
+    void * DeviceController::init_device(void *param)
+    {
+        ((OutputDevice *)param)->init(s_pConf);
+        return ((void *)0);
     }
 
     /*
@@ -111,11 +117,14 @@ namespace earlyapp
 #endif
 
         // Initalize devices.
-        for(auto& it: m_Devs)
-        {
-            LINF_(TAG, it->deviceName());
-            it->init(m_pConf);
-        }
+        s_pConf = m_pConf;
+        pthread_create(&init_aud_tid, NULL, init_device, (void *)m_pAud);
+        pthread_create(&init_vid_tid, NULL, init_device, (void *)m_pVid);
+        pthread_create(&init_cam_tid, NULL, init_device, (void *)m_pCam);
+
+        // left to join video thread when really playing it
+        pthread_join(init_aud_tid, NULL);
+        pthread_join(init_cam_tid, NULL);
 
 #ifdef USE_DMESGLOG
         dmesgLogPrint("EA: Devices initialized");
@@ -181,6 +190,7 @@ namespace earlyapp
                 // Video device.
                 if(m_pVid != nullptr)
                 {
+                    pthread_join(init_vid_tid, NULL);
                     m_pVid->preparePlay(nullptr);
                     m_pVid->play();
                     // The VideoDevice will be held until it gets EOS.
