@@ -1,0 +1,8 @@
+[Unit]
+Before=suspend.target
+
+[Service]
+ExecStart=/usr/bin/systemctl stop earlyapp.service
+
+[Install]
+WantedBy=suspend.target
