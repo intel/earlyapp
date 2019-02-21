@@ -33,7 +33,9 @@ SET(CONF_FILES
     ias-earlyapp-setup.service
     earlyapp_resume.service
     earlyapp_suspend.service
-    earlyapp-setup.service
+    earlyapp-setup-cbc.service
+    earlyapp-setup-render.service
+    earlyapp-setup-aud.service
     earlyapp-setup_gst.service
     earlyapp-setup_gpnative.service
     earlyapp-setup-ipu.service

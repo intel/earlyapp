@@ -1,0 +1,10 @@
+[Unit]
+Description=Setup device nodes for Early App
+DefaultDependencies=no
+
+[Service]
+RemainAfterExit=yes
+Slice=earlyapp.slice
+
+# Set permission to playback audio
+ExecStart=/usr/bin/usermod -a -G audio ias
