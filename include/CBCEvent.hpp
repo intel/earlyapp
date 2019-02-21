@@ -55,6 +55,9 @@ namespace earlyapp
             /** @brief Application exit. */
             eAPPLICATION_EXIT,
 
+	    /** @Brief Test EGL key */
+	    eGEARSTATUS_EGL,
+
             /** @brief MIN index. */
             eCBCEVENT_MIN = eGEARSTATUS_UNKNOWN,
 

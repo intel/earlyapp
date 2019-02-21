@@ -22,42 +22,57 @@
 # SPDX-License-Identifier: MIT
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
+SET(CMAKE_VERBOSE_MAKEFILE true)
 
-# Project name and version
-PROJECT("earlyapp")
-SET(PROJECT_VERSION_MAJOR 1)
-SET(PROJECT_VERSION_MINOR 0)
-SET(PROJECT_VERSION_PATCH 9)
-
-# Version file.
-CONFIGURE_FILE("version.h.in" ${CMAKE_BINARY_DIR}/include/EAVersion.h)
-
-# Program executable.
-SET(PROGRAM_EXE ${CMAKE_PROJECT_NAME})
+# Source files.
+SET(SRC_FILES
+    simple-egl.c
+    ivi-application-protocol.c
+    ias-shell-protocol.c
+    xdg-shell-unstable-v6-protocol.c)
 
 
-# [Features]
-#  - Log output
-OPTION(USE_LOGOUTPUT "Control detailed log output to standard out" OFF)
-IF(USE_LOGOUTPUT)
-    ADD_DEFINITIONS(-DUSE_LOGOUTPUT -DBOOST_LOG_DYN_LINK)
-ENDIF(USE_LOGOUTPUT)
+FIND_PACKAGE(PkgConfig REQUIRED)
 
-#  - Log demsg output
-OPTION(USE_DMESGLOG "Log output to dmesg log" OFF)
-IF(USE_DMESGLOG)
-    ADD_DEFINITIONS(-DUSE_DMESGLOG)
-ENDIF(USE_DMESGLOG)
+# LibDRM
+PKG_CHECK_MODULES(LIBDRM REQUIRED libdrm)
 
 
-SUBDIRS(ext/MediaSDK/src ext/CameraICI/src ext/GLES2/src src)
+INCLUDE_DIRECTORIES(
+    ${CMAKE_BINARY_DIR}/include
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/ext/GLES2/include
+    ${Boost_INCLUDE_DIRS}
+    ${LIBDRM_INCLUDE_DIRS})
 
-# Service configuration
-SUBDIRS(config)
+# Compile options.
+ADD_COMPILE_OPTIONS(
+    -Wall
+    -Wformat -Wformat-security
+    -O2 -D_FORTIFY_SOURCE=2
+    -fPIE -fPIC
+    -fstack-protector-strong
+    ${GST_CFLAGS}
+    ${LIBDRM_CFLAGS})
 
-# Resources files
-SUBDIRS(res)
+# Add linker flags.
+SET(CMAKE_EXE_LINKER_FLAGS "-pie -z noexecstack -z relro -z now")
 
-SUBDIRS(fastboot)
 
+# Libraries
+LINK_LIBRARIES(
+     stdc++
+     pthread
+     ${LIBDRM_LIBRARIES}
+     wayland-client 
+     drm 
+     drm_intel 
+     EGL 
+     GLESv2 
+     wayland-egl
+     wayland-cursor
+     )
+
+
+#Object libary for unittests.
+ADD_LIBRARY(gles2 OBJECT ${SRC_FILES})

@@ -40,6 +40,7 @@
 #include "AudioDevice.hpp"
 #include "VideoDevice.hpp"
 #include "CameraDevice.hpp"
+#include "simple-egl.h"
 
 #include "GstAudioDevice.hpp"
 #include "GstVideoDevice.hpp"
