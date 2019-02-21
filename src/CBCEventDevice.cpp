@@ -154,6 +154,9 @@ namespace earlyapp
                  case 0x05:
                      cbcEv = CBCEvent::eAPPLICATION_EXIT;
                      break;
+		 case 0x02:
+		     cbcEv = CBCEvent::eGEARSTATUS_EGL;
+		     break;
                  default:
                      cbcEv = CBCEvent::eGEARSTATUS_UNKNOWN;
                      LWRN_(TAG,"Wrong button, Please input correct button");

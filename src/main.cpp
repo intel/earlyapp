@@ -41,12 +41,13 @@
 #include "SystemStatusTracker.hpp"
 #include "DeviceController.hpp"
 #include "Configuration.hpp"
+#include "GPIOControl.hpp"
 
 #include "GStreamerApp.hpp"
+#include "simple-egl.h"
 
 // A log tag for main.
 #define TAG "MAIN"
-
 
 // Event device reading interval.
 #define EARLYAPP_EVENT_LOOP_INTERVAL 30
@@ -140,6 +141,8 @@ int main(int argc, char* argv[])
     }
 
 
+    std::shared_ptr<earlyapp::CBCEvent> pEv;
+    pEv = evDev->readEvent();
     /*
       Device controller - requires SystemStatusTracker.
      */
@@ -156,6 +159,15 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    if (pEv->toEnum() == earlyapp::CBCEvent::eGEARSTATUS_EGL) {
+	void* gles_pGPIOClass = NULL;
+	if(pConf->gpioNumber() != pConf->NOT_SET)
+        {
+            gles_pGPIOClass = earlyapp::GPIOControl_create(pConf->gpioNumber(), pConf->gpioSustain());
+        }
+
+        simple_egl_main(gles_pGPIOClass);
+    }
 
     /*
       Loop control.
@@ -163,13 +175,13 @@ int main(int argc, char* argv[])
      */
     bool bLoopCtrl = true;
 
-
     /*
       Event listenr (event loop)
      */
     // Set event device.
     evListener.setEventDevice(evDev);
 
+    
     // System status tracker subscribes CBC events.
     evListener.addSubscriber(&ssTracker);
 
@@ -195,7 +207,8 @@ int main(int argc, char* argv[])
         handleProgramLaunchingError(e);
     }
 
-
+    /*inject back the event to avoid missing event */
+    evListener.injectEvent(pEv->toEnum());
     /*
       Main(device) loop.
      */

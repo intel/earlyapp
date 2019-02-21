@@ -94,6 +94,7 @@ INCLUDE_DIRECTORIES(
     ${GST_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/ext/MediaSDK/include
     ${PROJECT_SOURCE_DIR}/ext/CameraICI/include
+    ${PROJECT_SOURCE_DIR}/ext/GLES2/include
     ${MSDK_INCLUDE_DIRS}
     ${ALSA_INCLUDE_DIRS}
     ${EGL_INCLUDE_DIRS})
@@ -108,6 +109,7 @@ LINK_LIBRARIES(
     ${GST_LIBRARIES}
     msdk
     iciCam
+    gles2
     ${LINK_LIBRARIES}
     ${MSDK_LIBRARIES}
     ${ALSA_LIBRARIES}
