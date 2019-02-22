@@ -55,7 +55,6 @@
 
 #include "simple-egl.h"
 void * g_GlesGpioClass = NULL;
-int g_glestriggerOnce = 1;
 
 struct window;
 struct seat;
@@ -644,13 +643,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	} else {
 		wl_surface_set_opaque_region(window->surface, NULL);
 	}
-#if 0
-	if(g_glestriggerOnce && g_GlesGpioClass)
-	{
-		GPIOControl_outputPattern(g_GlesGpioClass);
-		g_glestriggerOnce = 0;
-	}
-#endif
 
 	if (display->swap_buffers_with_damage && buffer_age > 0) {
 		rect[0] = window->geometry.width / 4 - 1;
@@ -664,11 +656,8 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		eglSwapBuffers(display->egl.dpy, window->egl_surface);
 	}
 
-	if(g_glestriggerOnce && g_GlesGpioClass)
-	{
+	if(g_GlesGpioClass)
 		GPIOControl_outputPattern(g_GlesGpioClass);
-		g_glestriggerOnce = 0;
-	}
 
 	window->frames++;
 }
