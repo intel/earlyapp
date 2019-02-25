@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if (pEv->toEnum() == earlyapp::CBCEvent::eGEARSTATUS_EGL) {
+    if (( pEv != nullptr ) && (pEv->toEnum() == earlyapp::CBCEvent::eGEARSTATUS_EGL)) {
 	void* gles_pGPIOClass = NULL;
 	if(pConf->gpioNumber() != pConf->NOT_SET)
         {
@@ -208,7 +208,8 @@ int main(int argc, char* argv[])
     }
 
     /*inject back the event to avoid missing event */
-    evListener.injectEvent(pEv->toEnum());
+    if(pEv != nullptr)
+        evListener.injectEvent(pEv->toEnum());
     /*
       Main(device) loop.
      */
