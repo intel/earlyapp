@@ -44,6 +44,7 @@
 #ifdef SPLASH_SCREEN_FB_FILE
 static pthread_t splash_screen_tid;
 void *splash_screen_init(void *arg);
+static int splash_screen_trigger = 0;
 #endif
 #define CBC_ATTACH
 #ifdef CBC_ATTACH
@@ -283,9 +284,14 @@ int main(int argc, char *argv[])
 	}
 	close(fd);
 
+	fd = open(SPLASH_SCREEN_TRIGGER_FILE, O_RDONLY);
+	if (fd > 0) {
 #ifdef SPLASH_SCREEN_FB_FILE
-	pthread_create(&splash_screen_tid, NULL, splash_screen_init, NULL);
+		pthread_create(&splash_screen_tid, NULL, splash_screen_init, NULL);
+		splash_screen_trigger = 1;
+		close(fd);
 #endif
+	}
 
 #ifdef PRELOAD_LIST_FILE
 	pthread_create(&preload_tid, NULL, preload_thread, NULL);
@@ -296,7 +302,8 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef SPLASH_SCREEN_FB_FILE
-	pthread_join(splash_screen_tid, NULL);
+	if (1 == splash_screen_trigger)
+		pthread_join(splash_screen_tid, NULL);
 #endif
 
 #ifdef PRELOAD_LIST_FILE
