@@ -9,7 +9,7 @@
 # load audio driver
 modprobe snd_soc_skl
 modprobe snd_soc_tdf8532
-modprobe snd_soc_sst_bxt_tdf8532
+modprobe snd_soc_sst_bxt_sos_tdf8532
 
 # turn on codec0_out Switch
 for i in {1..16}
