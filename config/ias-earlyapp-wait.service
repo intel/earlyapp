@@ -1,0 +1,10 @@
+[Unit]
+ConditionPathExists=/usr/share/earlyapp/trigger_fb
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+Restart=no
+Slice=earlyapp.slice
+
+ExecStart=/usr/bin/sleep 0.5

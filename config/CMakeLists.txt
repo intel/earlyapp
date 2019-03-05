@@ -31,6 +31,7 @@ SET(CONF_FILES
     earlyapp.slice
     ias-earlyapp.service
     ias-earlyapp-setup.service
+    ias-earlyapp-wait.service
     earlyapp_resume.service
     earlyapp_suspend.service
     earlyapp-setup-cbc.service
