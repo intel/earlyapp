@@ -5,8 +5,8 @@ DefaultDependencies=no
 Conflicts=shutdown.target
 Before=shutdown.target
 
-Requires=ias-earlyapp-setup.service ias-earlyapp-wait.service
-After=ias-earlyapp-setup.service ias-earlyapp-wait.service
+Requires=ias-earlyapp-setup.service
+After=ias-earlyapp-setup.service
 
 [Service]
 Environment=XDG_CONFIG_HOME=/usr/share/xdg/weston XDG_RUNTIME_DIR=/run/ias

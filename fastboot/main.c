@@ -42,10 +42,10 @@
 #define DEFAULT_INIT "/sbin/init"
 
 #ifdef SPLASH_SCREEN_FB_FILE
-static pthread_t splash_screen_tid;
 void *splash_screen_init(void *arg);
-static int splash_screen_trigger = 0;
 #endif
+static int splash_screen_trigger = 0;
+
 #define CBC_ATTACH
 #ifdef CBC_ATTACH
 static pthread_t cbc_attach_tid;
@@ -219,19 +219,47 @@ exit:
 }
 #endif
 
+static int init_work(void)
+{
+	int ret;
+	ret = system("mkdir -p " WORKDIR);
+	if (ret < 0) {
+		fprintf(stderr, "create dir %s error (%d): %m\n", WORKDIR, errno);
+		return -1;
+	}
+
+	/* for kpi test */
+	if (access("/sys/class/gpio/export", R_OK) != 0) {
+		mount("/sys", "/sys", "sysfs", 0, NULL);
+	}
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int fd;
 	int ret;
 	char buf[8];
 
-
 	if (getpid() == 1) {
+		fd = open(SPLASH_SCREEN_TRIGGER_FILE, O_RDONLY);
+		if (fd > 0) {
+			close(fd);
+			init_work();
+			splash_screen_trigger = 1;
+			splash_screen_init(NULL);
+		}
 		if (fork())
 			execl(DEFAULT_INIT, DEFAULT_INIT, NULL);
 	}
 
-       /* try to load ipu4 modules AEAP */
+    	if (0 == splash_screen_trigger){
+		ret = init_work();
+		if (ret < 0)
+			return ret;
+	}
+
+    /* try to load ipu4 modules AEAP */
 	pid_t pid = fork();
 	if (pid < 0)
 		fprintf(stderr, "fork ipu4 pid error\n");
@@ -260,38 +288,6 @@ int main(int argc, char *argv[])
 		pthread_join(load_ipu4_isys_tid,  NULL);
 		return 0;
 	}
-	/* for kpi test */
-	if (access("/sys/class/gpio/export", R_OK) != 0) {
-		mount("/sys", "/sys", "sysfs", 0, NULL);
-	}
-
-	ret = system("mkdir -p " WORKDIR);
-	if (ret < 0) {
-		fprintf(stderr, "create dir %s error (%d): %m\n", WORKDIR, errno);
-		return -1;
-	}
-	fd = open(WORKDIR "/.fastboot.pid", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0) {
-		fprintf(stderr, "open %s error (%d): %m\n", WORKDIR "/.fastboot.pid", errno);
-		return -1;
-	}
-	ret = snprintf(buf, sizeof(buf) - 1, "%d", getpid());
-	ret += 1;
-	buf[ret] = 0;
-	if (write(fd, buf, ret) != ret) {
-		fprintf(stderr, "save pid error (%d): %m\n", errno);
-		return -1;
-	}
-	close(fd);
-
-	fd = open(SPLASH_SCREEN_TRIGGER_FILE, O_RDONLY);
-	if (fd > 0) {
-#ifdef SPLASH_SCREEN_FB_FILE
-		pthread_create(&splash_screen_tid, NULL, splash_screen_init, NULL);
-		splash_screen_trigger = 1;
-		close(fd);
-#endif
-	}
 
 #ifdef PRELOAD_LIST_FILE
 	pthread_create(&preload_tid, NULL, preload_thread, NULL);
@@ -299,11 +295,6 @@ int main(int argc, char *argv[])
 
 #ifdef EARLY_AUDIO_CMD
 	pthread_create(&early_audio_tid, NULL, setup_early_audio, NULL);
-#endif
-
-#ifdef SPLASH_SCREEN_FB_FILE
-	if (1 == splash_screen_trigger)
-		pthread_join(splash_screen_tid, NULL);
 #endif
 
 #ifdef PRELOAD_LIST_FILE

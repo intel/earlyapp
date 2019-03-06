@@ -233,7 +233,6 @@ exit:
 	if (system(SPLASH_SCREEN_END_CMD " > /dev/null"))
 		fprintf(stderr, "\"%s\" return error\n", SPLASH_SCREEN_END_CMD);
 #endif
-	usleep(5000000);
 	if (img_fd > 0)
 		close(img_fd);
 	if (drm_fd > 0) {
