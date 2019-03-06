@@ -15,7 +15,7 @@ modprobe snd_soc_sst_bxt_sos_tdf8532
 for i in {1..16}
 do
 	echo "EA: mixer cset $i" > /dev/kmsg
-	/usr/bin/amixer -c0 cset numid=19 On > /dev/kmsg 2>&1
+	/usr/bin/amixer -c0 cset name='codec0_out mo media_in mi Switch' On > /dev/kmsg 2>&1
 	[ $? -eq 0 ] && break;
 	sleep 0.1
 done
