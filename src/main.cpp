@@ -32,6 +32,7 @@
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <fcntl.h>
 
 #include "EALog.h"
 #include "OutputDevice.hpp"
@@ -55,7 +56,6 @@
 // Device control interval.
 #define EARLYAPP_DEVICE_LOOP_INTERVAL 20
 
-
 // Handles program launching error.
 void handleProgramLaunchingError(const std::exception& e)
 {
@@ -73,11 +73,23 @@ void handleProgramLaunchingError(const std::exception& e)
 
 int main(int argc, char* argv[])
 {
+    int fd;
+    int ret;
+    char buf[8];
+    bool bNeedResumeToRVC = false; 
 
 #ifdef USE_DMESGLOG
      dmesgLogInit();
      dmesgLogPrint("EA: main");
 #endif
+
+//    fd = open(, O_CREAT | O_RDWR | O_SYNC | O_TRUNC, S_IRWXU);
+//    if (fd < 0)
+//    {
+//           fprintf(stderr, "open %s error (%d): %m\n", "/tmp/.earlyapp.sus", errno);
+//           return -1;
+//    }
+//    close(fd);
 
     /*
       Has event device open well?
@@ -159,6 +171,9 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    void* gp_pGPIOClass = NULL;
+    gp_pGPIOClass = earlyapp::GPIOControl_create(pConf->gpioNumber(), pConf->gpioSustain());
+
     if (( pEv != nullptr ) && (pEv->toEnum() == earlyapp::CBCEvent::eGEARSTATUS_EGL)) {
 	void* gles_pGPIOClass = NULL;
 	if(pConf->gpioNumber() != pConf->NOT_SET)
@@ -215,9 +230,44 @@ int main(int argc, char* argv[])
      */
     do
     {
+
         //LINF_(TAG, "In main thread");
-        boost::this_thread::sleep(
-            boost::posix_time::milliseconds(EARLYAPP_DEVICE_LOOP_INTERVAL));
+	boost::this_thread::sleep(
+	    boost::posix_time::milliseconds(EARLYAPP_DEVICE_LOOP_INTERVAL));
+
+ //       fd=open("/tmp/.earlyapp.sus", O_RDWR);
+        fd=open(pConf->resumesyncPath().c_str(), O_RDWR);
+        if (fd < 0)
+        {
+	    fprintf(stderr, "open %s error (%d): %m\n", "/tmp/.earlyapp.sus", errno);
+	    return -1;
+        }
+
+        ret = read(fd, buf, 1);
+        if( ret == 1 )
+        {
+            if((buf[0] == 0x32) && ((ssTracker.currentState() == earlyapp::SystemStatusTracker::eSTATE_RVC)||(ssTracker.currentState() == earlyapp::SystemStatusTracker::eSTATE_BOOTRVC))) 
+            {
+                // Going to suspend
+                // Inject forward gear signal to transit to Idle to close the camera streaming.
+                evListener.injectEvent(earlyapp::CBCEvent::eGEARSTATUS_FORWARD);
+                printf("When suspend, inject eGEARSTATUS_FORWARD to idle, buf=%d ret=%d \n", buf[0], ret);
+                lseek(fd, 0x00, SEEK_SET);
+                buf[0] = 0x30;
+                write(fd, buf, 1);
+		bNeedResumeToRVC = true;
+	    }
+	    else if((buf[0] == 0x31) && bNeedResumeToRVC)
+	    {
+                evListener.injectEvent(earlyapp::CBCEvent::eGEARSTATUS_REVERSE);
+		printf("When resume, inject eGEARSTATUS_REVERSE to RVC buf=%d ret=%d \n", buf[0], ret);
+		lseek(fd, 0x00, SEEK_SET);
+		buf[0] = 0x30;
+		write(fd, buf, 1);
+		bNeedResumeToRVC = false;
+	    }
+        }
+        close(fd);
 
         // Was there a status change?
         if(ssTracker.isStatusChanged())

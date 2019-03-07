@@ -1,9 +1,9 @@
 [Unit]
-Description=Restart earlyapp after resume from suspend
+Description=Inform earlyapp the resume event
 After=suspend.target
 
 [Service]
-ExecStart=/usr/bin/systemctl --no-block restart earlyapp.service
+ExecStart=/usr/bin/bash -c '/usr/bin/echo 1 > /usr/share/earlyapp/resume_sync'
 
 [Install]
 WantedBy=suspend.target

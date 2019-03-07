@@ -50,6 +50,7 @@ namespace earlyapp
     const char* Configuration::DEFAULT_CAMERA_INPUTSOURCE = "icam";
     const char* Configuration::DEFAULT_VIDEO_SPLASH_PATH = "/usr/share/earlyapp/splash_video.h264";
     const char* Configuration::DEFAULT_CBCDEVICE_PATH = "/dev/cbc-early-signals";
+    const char* Configuration::DEFAULT_RESUME_SYNC_PATH = "/usr/share/earlyapp/resume_sync";
     const char* Configuration::DEFAULT_TESTCBCDEVICE_PATH = "";
     const unsigned int Configuration::DEFAULT_DISPLAY_WIDTH = DONT_CARE;
     const unsigned int Configuration::DEFAULT_DISPLAY_HEIGHT = DONT_CARE;
@@ -65,6 +66,7 @@ namespace earlyapp
     const char* Configuration::KEY_CAMERASOURCE = "camera-input";
     const char* Configuration::KEY_SPLASHVIDEO = "splash-video";
     const char* Configuration::KEY_CBCDEVICE = "cbc-device";
+    const char* Configuration::KEY_RESUMESYNC = "resume-sync";
     const char* Configuration::KEY_TESTCBCDEVICE = "test-cbc-device";
     const char* Configuration::KEY_DISPLAYWIDTH = "width";
     const char* Configuration::KEY_DISPLAYHEIGHT = "height";
@@ -143,6 +145,12 @@ namespace earlyapp
     const std::string& Configuration::cbcDevicePath(void)
     {
         return stringMappedValueOf(Configuration::KEY_CBCDEVICE);
+    }
+
+    //resume sync
+    const std::string& Configuration::resumesyncPath(void)
+    {
+	    return stringMappedValueOf(Configuration::KEY_RESUMESYNC);
     }
 
     // A test device.
@@ -248,6 +256,10 @@ namespace earlyapp
                 ("cbc-device,d",
                  boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_CBCDEVICE_PATH),
                  "CBC device path.")
+                
+		("resume-sync,r",
+		 boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_RESUME_SYNC_PATH),
+		 "resume sync path.")
 
                 // Test CBC device path.
                 ("test-cbc-device,t",
