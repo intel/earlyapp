@@ -195,6 +195,10 @@ void *splash_screen_init(void *arg)
 	dev_t dev;
 	int drm_fd = -1;
 	int img_fd = -1;
+	FILE *fp;
+	char str[6];
+	int msec;
+	useconds_t usec;
 	struct stat sb;
 
 #ifdef SPLASH_SCREEN_START_CMD
@@ -233,6 +237,18 @@ exit:
 	if (system(SPLASH_SCREEN_END_CMD " > /dev/null"))
 		fprintf(stderr, "\"%s\" return error\n", SPLASH_SCREEN_END_CMD);
 #endif
+	fp = fopen(SPLASH_SCREEN_TRIGGER_FILE, "r");
+	if (fp > 0) {
+		if (feof(fp) == 0) {
+			fgets(str,6,fp);
+			msec = atoi(str);
+			msec = (msec < 0 ? 0: msec);
+			usec = (msec > SPLASH_SCREEN_MAX_MS_DURATION ? SPLASH_SCREEN_MAX_MS_DURATION : msec) * 1000;
+			usleep(usec);
+		}
+
+		close(fp);
+	}
 	if (img_fd > 0)
 		close(img_fd);
 	if (drm_fd > 0) {
