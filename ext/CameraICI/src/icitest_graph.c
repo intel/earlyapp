@@ -411,7 +411,7 @@ void redraw_egl_way(struct window *window, struct buffer *buf,
 	if(g_triggerOnce && g_GpioClass)
 	{
 		GPIOControl_outputPattern(g_GpioClass);
-		g_triggerOnce = 0;
+	//	g_triggerOnce = 0;
 	}
 	if (first_frame_received == 1 && first_frame_rendered == 0) {
 		first_frame_rendered = 1;

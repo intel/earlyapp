@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup RVC resume sync
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Slice=earlyapp.slice
+
+# change mode and owner,which will be acessed by earlyapp
+ExecStart=/usr/bin/chown :ias /usr/share/earlyapp/resume_sync
+ExecStart=/usr/bin/chmod g+rw /usr/share/earlyapp/resume_sync

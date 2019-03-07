@@ -44,6 +44,7 @@ SET(CONF_FILES
     simple-egl_resume.service
     early-audio.service
     early-audio_resume.service
+    earlyapp-setup-resume.service
     mem_hot_add.service)
 
 # Early App Service file.
@@ -59,6 +60,7 @@ SET(SCRIPT_FILES
     early_audio.sh
     early_ipu.sh
     kpi_gpio.sh
+    resume_sync
     mem_hot_add.sh)
 
 # Install earlyapp.service
