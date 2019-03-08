@@ -601,13 +601,13 @@ int ConfigureICI(bool w4pipline)
     if(open_pipe_device(w4pipline))
     {
         parse_args('r',"");
-        parse_args('f',"Intel IPU4 CSI2 BE SOC 0:0 [ffmt:720x240,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
-        parse_args('f',"Intel IPU4 CSI2 BE SOC 0:1 [ffmt:720x240,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
-        parse_args('f',"Intel IPU4 CSI-2 4 VC 0:0 [ffmt:720x240,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
-        parse_args('f',"Intel IPU4 CSI-2 4 VC 0:1 [ffmt:720x240,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
-        parse_args('f',"adv7481 cvbs binner:0 [ffmt:720x240,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
-        parse_args('f',"adv7481 cvbs binner:1 [ffmt:720x240,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
-        parse_args('f',"adv7481 cvbs pixel array:0 [ffmt:720x240,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
+        parse_args('f',"Intel IPU4 CSI2 BE SOC 0:0 [ffmt:720x288,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
+        parse_args('f',"Intel IPU4 CSI2 BE SOC 0:1 [ffmt:720x288,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
+        parse_args('f',"Intel IPU4 CSI-2 4 VC 0:0 [ffmt:720x288,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
+        parse_args('f',"Intel IPU4 CSI-2 4 VC 0:1 [ffmt:720x288,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
+        parse_args('f',"adv7481 cvbs binner:0 [ffmt:720x288,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
+        parse_args('f',"adv7481 cvbs binner:1 [ffmt:720x288,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
+        parse_args('f',"adv7481 cvbs pixel array:0 [ffmt:720x288,ICI_FORMAT_UYVY,ICI_FIELD_NONE,0,0]");
         parse_args('l',"adv7481 cvbs pixel array:0 adv7481 cvbs binner:0 [enabled]");
         parse_args('l',"adv7481 cvbs binner:1 Intel IPU4 CSI-2 4 VC 0:0 [enabled]");
         parse_args('l',"Intel IPU4 CSI-2 4 VC 0:1 Intel IPU4 CSI2 BE SOC 0:0 [enabled]");

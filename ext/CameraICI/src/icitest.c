@@ -180,7 +180,7 @@ void format_setup(struct setup *s)
 
 		default:
 			stream_fmt.ffmt.width = 720;
-			stream_fmt.ffmt.height = 240;
+			stream_fmt.ffmt.height = 288;
 
 			if (pixelformat && pixelformat != ICI_FORMAT_UYVY) {
 				WARN_ON(1, "wrong pixelformat, only UYVY allowed!!\n");
