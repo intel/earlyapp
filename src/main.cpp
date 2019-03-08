@@ -83,14 +83,6 @@ int main(int argc, char* argv[])
      dmesgLogPrint("EA: main");
 #endif
 
-//    fd = open(, O_CREAT | O_RDWR | O_SYNC | O_TRUNC, S_IRWXU);
-//    if (fd < 0)
-//    {
-//           fprintf(stderr, "open %s error (%d): %m\n", "/tmp/.earlyapp.sus", errno);
-//           return -1;
-//    }
-//    close(fd);
-
     /*
       Has event device open well?
      */
@@ -235,40 +227,39 @@ int main(int argc, char* argv[])
 	boost::this_thread::sleep(
 	    boost::posix_time::milliseconds(EARLYAPP_DEVICE_LOOP_INTERVAL));
 
- //       fd=open("/tmp/.earlyapp.sus", O_RDWR);
         fd=open(pConf->resumesyncPath().c_str(), O_RDWR);
         if (fd < 0)
         {
-	    fprintf(stderr, "open %s error (%d): %m\n", "/tmp/.earlyapp.sus", errno);
-	    return -1;
+	    fprintf(stderr, "open %s error (%d): %m\n", "/usr/share/earlyapp/resume_sync", errno);
         }
-
-        ret = read(fd, buf, 1);
-        if( ret == 1 )
-        {
-            if((buf[0] == 0x32) && ((ssTracker.currentState() == earlyapp::SystemStatusTracker::eSTATE_RVC)||(ssTracker.currentState() == earlyapp::SystemStatusTracker::eSTATE_BOOTRVC))) 
+	else
+	{
+            ret = read(fd, buf, 1);
+            if( ret == 1 )
             {
-                // Going to suspend
-                // Inject forward gear signal to transit to Idle to close the camera streaming.
-                evListener.injectEvent(earlyapp::CBCEvent::eGEARSTATUS_FORWARD);
-                printf("When suspend, inject eGEARSTATUS_FORWARD to idle, buf=%d ret=%d \n", buf[0], ret);
-                lseek(fd, 0x00, SEEK_SET);
-                buf[0] = 0x30;
-                write(fd, buf, 1);
-		bNeedResumeToRVC = true;
+                if((buf[0] == 0x32) && ((ssTracker.currentState() == earlyapp::SystemStatusTracker::eSTATE_RVC)||(ssTracker.currentState() == earlyapp::SystemStatusTracker::eSTATE_BOOTRVC))) 
+                {
+                    // Going to suspend
+                    // Inject forward gear signal to transit to Idle to close the camera streaming.
+                    evListener.injectEvent(earlyapp::CBCEvent::eGEARSTATUS_FORWARD);
+                    printf("When suspend, inject eGEARSTATUS_FORWARD to idle, buf=%d ret=%d \n", buf[0], ret);
+                    lseek(fd, 0x00, SEEK_SET);
+                    buf[0] = 0x30;
+                    write(fd, buf, 1);
+		    bNeedResumeToRVC = true;
+	        }
+	        else if((buf[0] == 0x31) && bNeedResumeToRVC)
+	        {
+                    evListener.injectEvent(earlyapp::CBCEvent::eGEARSTATUS_REVERSE);
+		    printf("When resume, inject eGEARSTATUS_REVERSE to RVC buf=%d ret=%d \n", buf[0], ret);
+		    lseek(fd, 0x00, SEEK_SET);
+		    buf[0] = 0x30;
+		    write(fd, buf, 1);
+		    bNeedResumeToRVC = false;
+	        }
 	    }
-	    else if((buf[0] == 0x31) && bNeedResumeToRVC)
-	    {
-                evListener.injectEvent(earlyapp::CBCEvent::eGEARSTATUS_REVERSE);
-		printf("When resume, inject eGEARSTATUS_REVERSE to RVC buf=%d ret=%d \n", buf[0], ret);
-		lseek(fd, 0x00, SEEK_SET);
-		buf[0] = 0x30;
-		write(fd, buf, 1);
-		bNeedResumeToRVC = false;
-	    }
-        }
-        close(fd);
-
+            close(fd);
+	}
         // Was there a status change?
         if(ssTracker.isStatusChanged())
         {
