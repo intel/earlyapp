@@ -175,21 +175,6 @@ namespace earlyapp
 
             case SystemStatusTracker::eSTATE_BOOTVIDEO:
             {
-                // Video device.
-                if(m_pVid != nullptr)
-                {
-                    pthread_join(init_vid_tid, NULL);
-                    m_pVid->preparePlay(nullptr);
-                    m_pVid->play();
-                    // The VideoDevice will be held until it gets EOS.
-                    m_pVid->prepareStop();
-                    m_pVid->stop();
-                }
-                else
-                {
-                    LWRN_(TAG, "Invalid Video device: BOOTVIDEO");
-                }
-
                 // Audio device.
                 std::shared_ptr<DeviceParameter> audioParam(new DeviceParameter());
                 audioParam->setFileToPlay(m_pConf->audioSplashSoundPath());
@@ -202,6 +187,27 @@ namespace earlyapp
                 {
                     LWRN_(TAG, "Invalid Audio device: BOOTVIDEO");
                 }
+
+                // Video device.
+                if(m_pVid != nullptr)
+                {
+                    pthread_join(init_vid_tid, NULL);
+                    m_pVid->preparePlay(nullptr);
+                    m_pVid->play();
+                    // The VideoDevice will be held until it gets EOS.
+                    m_pVid->prepareStop();
+                    m_pVid->stop();
+                    if(m_pAud != nullptr)
+                    {
+                        m_pAud->prepareStop();
+                        m_pAud->stop();
+                    }
+                }
+                else
+                {
+                    LWRN_(TAG, "Invalid Video device: BOOTVIDEO");
+                }
+
             }
             break;
 

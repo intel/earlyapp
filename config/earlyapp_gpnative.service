@@ -1,7 +1,7 @@
 [Unit]
 Description=Early App service file for Gordon Peak native.
 DefaultDependencies=no
-Wants=earlyapp-setup_gpnative_audio.service
+Wants=earlyapp-setup_gpnative_audio.service earlyapp-setup-aud.service
 Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup_gpnative.service
 After=ias-earlyapp.service cbc_attach.service earlyapp-setup_gpnative.service
 
