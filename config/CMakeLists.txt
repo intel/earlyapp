@@ -31,6 +31,7 @@ SET(CONF_FILES
     earlyapp.slice
     ias-earlyapp.service
     ias-earlyapp-setup.service
+    ias-earlyapp-wait.service
     earlyapp_resume.service
     earlyapp_suspend.service
     earlyapp-setup-cbc.service
@@ -45,6 +46,7 @@ SET(CONF_FILES
     simple-egl_resume.service
     early-audio.service
     early-audio_resume.service
+    earlyapp-setup-resume.service
     mem_hot_add.service)
 
 # Early App Service file.
@@ -58,7 +60,9 @@ SET(EAS_SRC
 # Script files.
 SET(SCRIPT_FILES
     early_audio.sh
+    early_ipu.sh
     kpi_gpio.sh
+    resume_sync
     mem_hot_add.sh)
 
 # Install earlyapp.service

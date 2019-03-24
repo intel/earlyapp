@@ -1,7 +1,7 @@
 [Unit]
 Description=GP2.0 Early application
 DefaultDependencies=no
-Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup-cbc.service earlyapp-setup-render.service earlyapp-setup-aud.service earlyapp-setup-ipu.service
+Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup-cbc.service earlyapp-setup-render.service earlyapp-setup-aud.service earlyapp-setup-ipu.service earlyapp-setup-resume.service
 After=ias-earlyapp.service cbc_attach.service earlyapp-setup-cbc.service earlyapp-setup-render.service earlyapp-setup-aud.service earlyapp-setup-ipu.service
 
 [Service]
@@ -12,3 +12,6 @@ ExecStart=/usr/bin/earlyapp --rvc-sound /usr/share/earlyapp/beep.wav --bootup-so
 Slice=earlyapp.slice
 User=ias
 SupplementaryGroups=video render
+
+[Install]
+Also=earlyapp_suspend.service earlyapp_resume.service

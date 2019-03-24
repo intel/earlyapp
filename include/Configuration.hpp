@@ -53,6 +53,7 @@ namespace earlyapp
         static const char* DEFAULT_CAMERA_INPUTSOURCE;
         static const char* DEFAULT_VIDEO_SPLASH_PATH;
         static const char* DEFAULT_CBCDEVICE_PATH;
+	static const char* DEFAULT_RESUME_SYNC_PATH;
         static const char* DEFAULT_TESTCBCDEVICE_PATH;
         static const unsigned int DEFAULT_DISPLAY_WIDTH;
         static const unsigned int DEFAULT_DISPLAY_HEIGHT;
@@ -70,6 +71,7 @@ namespace earlyapp
         static const char* KEY_CAMERASOURCE;
         static const char* KEY_SPLASHVIDEO;
         static const char* KEY_CBCDEVICE;
+	static const char* KEY_RESUMESYNC;
         static const char* KEY_TESTCBCDEVICE;
         static const char* KEY_DISPLAYWIDTH;
         static const char* KEY_DISPLAYHEIGHT;
@@ -134,6 +136,11 @@ namespace earlyapp
           @brief Returns CBC device path.
          */
         const std::string& cbcDevicePath(void);
+
+	/**
+	 @brief Returns resume sync path
+	 */
+	const std::string& resumesyncPath(void);
 
         /**
           @brief Returns test cbc device if given by user otherwise nullptr.

@@ -10,5 +10,5 @@ Slice=earlyapp.slice
 # Load IPU/ICI modules
 ExecStart=/usr/bin/modprobe -a crlmodule-lite intel-ipu4 intel-ipu4-mmu intel-ipu4-psys ici-isys-mod intel-ipu4-psys-csslib intel-ipu4-isys-csslib
 # Set permissions on ICI device nodes
-ExecStart=/usr/bin/chown :ias /dev/intel_stream27 /dev/intel_pipeline /dev/ipu-psys0
+ExecStart=/usr/share/earlyapp/early_ipu.sh
 ExecStart=/usr/bin/chmod g+rw /dev/intel_stream27 /dev/intel_pipeline /dev/ipu-psys0

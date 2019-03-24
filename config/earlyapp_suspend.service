@@ -1,8 +1,9 @@
 [Unit]
+Description=Inform earlyapp the suspend event
 Before=suspend.target
 
 [Service]
-ExecStart=/usr/bin/systemctl stop earlyapp.service
+ExecStart=/usr/bin/bash -c '/usr/bin/echo 2 > /usr/share/earlyapp/resume_sync'
 
 [Install]
 WantedBy=suspend.target
