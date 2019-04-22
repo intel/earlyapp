@@ -1,13 +1,11 @@
 [Unit]
-Description=Setup device nodes for Early App Gordon Peak native.
+Description=Setup IPU device nodes for Early App Gordon Peak native.
 DefaultDependencies=no
-After=cbc_attach.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 Slice=earlyapp.slice
 
-# Set permissions on GPU render nodes
-ExecStart=/usr/bin/chown :render /dev/dri/renderD128
-ExecStart=/usr/bin/chmod g+rw /dev/dri/renderD128
+# Load IPU modules
+ExecStart=/usr/bin/modprobe -a crlmodule intel-ipu4 intel-ipu4-mmu intel-ipu4-isys intel-ipu4-psys intel-ipu4-isys-csslib intel-ipu4-psys-csslib

@@ -1,8 +1,9 @@
 [Unit]
 Description=Early App service file for Gordon Peak native.
 DefaultDependencies=no
-Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup_gpnative.service
-After=ias-earlyapp.service cbc_attach.service earlyapp-setup_gpnative.service
+Wants=earlyapp-setup_gpnative_audio.service
+Requires=ias-earlyapp.service cbc_attach.service earlyapp-setup-cbc.service earlyapp-setup-render.service earlyapp-setup-aud.service earlyapp-setup_gpnative.service earlyapp-setup-resume.service
+After=ias-earlyapp.service cbc_attach.service earlyapp-setup-cbc.service earlyapp-setup-render.service earlyapp-setup-aud.service earlyapp-setup_gpnative.service
 
 [Service]
 Environment=XDG_RUNTIME_DIR=/run/ias
