@@ -60,6 +60,7 @@ namespace earlyapp
         static const int DEFAULT_GPIONUMBER;
         static const useconds_t DEFAULT_GPIOSUSTAIN;
         static const bool DEFAULT_USE_GSTREAMER;
+	static const bool DEFAULT_USE_CSICAM;
         static const char* DEFAULT_GSTCAMCMD;
 
 
@@ -78,6 +79,7 @@ namespace earlyapp
         static const char* KEY_GPIONUMBER;
         static const char* KEY_GPIOSUSTAIN;
         static const char* KEY_USEGSTREAMER;
+	static const char* KEY_USECSICAM;
         static const char* KEY_GSTCAMCMD;
 
 
@@ -171,6 +173,12 @@ namespace earlyapp
            @brief Returns whether user asked to use GStreamer.
         */
         bool useGStreamer(void) const;
+
+	/**
+           @brief Returns whether user asked to use Csicam.
+        */
+        bool useCsicam(void) const;
+
 
         /**
            @brief Returns GStreamer camera custom command.

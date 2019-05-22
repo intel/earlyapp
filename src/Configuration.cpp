@@ -57,6 +57,7 @@ namespace earlyapp
     const int Configuration::DEFAULT_GPIONUMBER = NOT_SET;
     const unsigned int Configuration::DEFAULT_GPIOSUSTAIN = 1;
     const bool Configuration::DEFAULT_USE_GSTREAMER = false;
+    const bool Configuration::DEFAULT_USE_CSICAM = false;
     const char* Configuration::DEFAULT_GSTCAMCMD = "";
 
 
@@ -73,6 +74,7 @@ namespace earlyapp
     const char* Configuration::KEY_GPIONUMBER = "gpio-number";
     const char* Configuration::KEY_GPIOSUSTAIN = "gpio-sustain";
     const char* Configuration::KEY_USEGSTREAMER = "use-gstreamer";
+    const char* Configuration::KEY_USECSICAM = "use-csicam";
     const char* Configuration::KEY_GSTCAMCMD = "gstcamcmd";
 
 
@@ -211,6 +213,13 @@ namespace earlyapp
         return useGStreamer;
     }
 
+    // Use CsiCam
+    bool Configuration::useCsicam(void) const
+    {
+        bool useCsicam = m_VM[Configuration::KEY_USECSICAM].as<bool>();
+        return useCsicam;
+    }
+
     // GStreamer camera custom command.
     const std::string& Configuration::gstCamCmd(void)
     {
@@ -301,7 +310,12 @@ namespace earlyapp
                  boost::program_options::bool_switch()->default_value(Configuration::DEFAULT_USE_GSTREAMER),
                  "Use GStreamer for auido, camera and video.")
 
-                // Custom GStreamer camera command.
+		// Custome CSI camera command
+                (Configuration::KEY_USECSICAM,
+                 boost::program_options::bool_switch()->default_value(Configuration::DEFAULT_USE_CSICAM),
+                 "Use GStreamer for auido, camera and video.")
+
+		// Custom GStreamer camera command.
                 (Configuration::KEY_GSTCAMCMD,
                  boost::program_options::value<std::string>()->default_value(Configuration::DEFAULT_GSTCAMCMD),
                  "Custom GStreamer camera command. Only supported with use-gstreamer option.");

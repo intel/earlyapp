@@ -45,6 +45,7 @@
 #include "GstAudioDevice.hpp"
 #include "GstVideoDevice.hpp"
 #include "GstCameraDevice.hpp"
+#include "CsiCameraDevice.hpp"
 #include <pthread.h>
 
 // A tag for DeviceController.
@@ -92,6 +93,19 @@ namespace earlyapp
                 GstVideoDevice::getInstance() : pVid;
             m_pCam = (pVid == nullptr) ?
                 GstCameraDevice::getInstance() : pCam;
+	     
+	    if(m_pConf->useCsicam())
+            {
+		m_pCam = (pCam == nullptr) ?
+                    CsiCameraDevice::getInstance() : pCam;
+
+            }
+            else
+            {
+                m_pCam = (pCam == nullptr) ?
+                    GstCameraDevice::getInstance() : pCam;
+            }
+
         }
         else
         {
@@ -111,8 +125,12 @@ namespace earlyapp
         dmesgLogPrint("EA: Waiting for Wayland socket...");
 #endif
         // Wait for the Wayland.
-        if(bWaitWL)
+	if(!m_pConf->useCsicam())
+	{
+           if(bWaitWL)
             waitForWayland();
+	}
+
 #ifdef USE_DMESGLOG
         dmesgLogPrint("EA: Got Wayland compositor socket.");
 #endif
@@ -131,6 +149,9 @@ namespace earlyapp
         dmesgLogPrint("EA: Devices initialized");
 #endif
         m_bInit = true;
+
+	if(m_pConf->useCsicam())
+	    waitForWayland();
     }
 
     /*
