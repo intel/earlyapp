@@ -92,6 +92,11 @@ namespace earlyapp
             m_pThread = m_pThreadGrp->create_thread(
                 boost::bind(
                     &displayLoop, m_pGSTPipeline, m_pGSTLoop));
+            m_pGSTBus = gst_element_get_bus(m_pGSTPipeline);
+            m_pGSTMsg = gst_bus_timed_pop_filtered(
+		m_pGSTBus,
+		GST_CLOCK_TIME_NONE,
+		(GstMessageType)(GST_MESSAGE_ERROR | GST_MESSAGE_EOS));
         }
         // In a same trhead.
         else
