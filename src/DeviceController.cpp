@@ -31,6 +31,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <boost/thread.hpp>
 #include "EALog.h"
 #include "Configuration.hpp"
 #include "DeviceController.hpp"
@@ -90,7 +91,7 @@ namespace earlyapp
                 GstAudioDevice::getInstance() : pAud;
             m_pVid = (pVid == nullptr) ?
                 GstVideoDevice::getInstance() : pVid;
-            m_pCam = (pVid == nullptr) ?
+            m_pCam = (pCam == nullptr) ?
                 GstCameraDevice::getInstance() : pCam;
         }
         else
@@ -131,6 +132,32 @@ namespace earlyapp
         dmesgLogPrint("EA: Devices initialized");
 #endif
         m_bInit = true;
+    }
+
+
+    /*Audio Play thread */
+    void DeviceController::AudioPlay_Thread(std::shared_ptr<Configuration> m_pConf, OutputDevice* m_pAud)
+    {
+        std::shared_ptr<DeviceParameter> audioParam(new DeviceParameter());
+        audioParam->setFileToPlay(m_pConf->audioSplashSoundPath());
+        m_pAud->preparePlay(audioParam);
+        m_pAud->play();
+
+        /* The Audio Device will be held until it gets EOS */
+        m_pAud->prepareStop();
+        m_pAud->stop();
+    }
+
+    /* Video Play thread */
+    void DeviceController::VideoPlay_Thread(OutputDevice* m_pVid)
+    {
+        pthread_join(init_vid_tid, NULL);
+        m_pVid->preparePlay(nullptr);
+        m_pVid->play();
+
+        /* The Video Device will be held until it gets EOS */
+        m_pVid->prepareStop();
+        m_pVid->stop();
     }
 
     /*
@@ -175,38 +202,33 @@ namespace earlyapp
 
             case SystemStatusTracker::eSTATE_BOOTVIDEO:
             {
-                // Audio device.
-                std::shared_ptr<DeviceParameter> audioParam(new DeviceParameter());
-                audioParam->setFileToPlay(m_pConf->audioSplashSoundPath());
-                if(m_pAud != nullptr)
-                {
-                    m_pAud->preparePlay(audioParam);
-                    m_pAud->play();
-                }
-                else
-                {
-                    LWRN_(TAG, "Invalid Audio device: BOOTVIDEO");
-                }
-
-                // Video device.
-                if(m_pVid != nullptr)
-                {
-                    pthread_join(init_vid_tid, NULL);
-                    m_pVid->preparePlay(nullptr);
-                    m_pVid->play();
-                    // The VideoDevice will be held until it gets EOS.
-                    m_pVid->prepareStop();
-                    m_pVid->stop();
-                    if(m_pAud != nullptr)
-                    {
-                        m_pAud->prepareStop();
-                        m_pAud->stop();
-                    }
-                }
-                else
-                {
-                    LWRN_(TAG, "Invalid Video device: BOOTVIDEO");
-                }
+               //Audio and Video Device Thread Creation
+		if(m_pAud != nullptr && m_pVid != nullptr)
+		{
+			/* Create Audio and Video play threads */
+			m_pThreadAudGrp = new(boost::thread_group);
+			m_pThreadVidGrp = new(boost::thread_group);
+			m_pThreadAud = m_pThreadAudGrp->create_thread(
+				boost::bind(&AudioPlay_Thread,m_pConf,m_pAud));
+			m_pThreadVid = m_pThreadVidGrp->create_thread(
+				boost::bind(&VideoPlay_Thread,m_pVid));
+			/* Join both audio and video play threads */
+			if(m_pThreadAudGrp && m_pThreadVidGrp)
+			{
+				m_pThreadAudGrp->join_all();
+				m_pThreadVidGrp->join_all();
+				delete m_pThreadAudGrp;
+				delete m_pThreadVidGrp;
+				m_pThreadAudGrp = nullptr;
+				m_pThreadAud = nullptr;
+				m_pThreadVidGrp = nullptr;
+				m_pThreadVid = nullptr;
+			}
+		}
+		else
+		{
+			LWRN_(TAG, "Invalid Audio and Video device: BOOTVIDEO");
+		}
 
             }
             break;

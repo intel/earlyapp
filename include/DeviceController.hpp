@@ -168,5 +168,18 @@ namespace earlyapp
         */
         const char* DEFAULT_WAYLAND_SOCKET = "wayland-0";
 
+	/**
+		@brief Audio play thread
+	*/
+	boost::thread_group* m_pThreadAudGrp = nullptr;
+	boost::thread* m_pThreadAud = nullptr;
+	static void AudioPlay_Thread(std::shared_ptr<Configuration> m_pConf, OutputDevice* m_pAud);
+
+	/**
+		@brief Video play thread
+	*/
+	boost::thread_group* m_pThreadVidGrp = nullptr;
+	boost::thread* m_pThreadVid = nullptr;
+	static void VideoPlay_Thread(OutputDevice* m_pVid);
     };
 } // namespace
