@@ -151,7 +151,6 @@ namespace earlyapp
     /* Video Play thread */
     void DeviceController::VideoPlay_Thread(OutputDevice* m_pVid)
     {
-        pthread_create(&init_vid_tid, NULL, init_device, (void *)m_pCam);
         pthread_join(init_vid_tid, NULL);
         m_pVid->preparePlay(nullptr);
         m_pVid->play();
