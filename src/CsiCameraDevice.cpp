@@ -163,7 +163,7 @@ namespace earlyapp
         {
             GPIOControl_release(m_pGPIOClass);
         }
-        /* Venkat disconnectWlConnection(); */
+
     }
 
     void CsiCameraDevice::displayCamera(set_up m_csiParam, void *GPIOClass)
