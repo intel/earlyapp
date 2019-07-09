@@ -86,9 +86,7 @@ namespace earlyapp
 	dmesgLogPrint("EA: Csi CameraDevice init\n");
 #endif
 
-        m_CSIEnabled = ConfigureCSI();
-
-        // Set output width/height with user set values.
+	// Set output width/height with user set values.
         // Set default if not set.
         m_csiParam.ow = m_pConf->displayWidth();
         m_csiParam.oh = m_pConf->displayHeight();
@@ -116,14 +114,7 @@ namespace earlyapp
 #ifdef USE_DMESGLOG
 	dmesgLogPrint("EA: Csi displayCamera play\n");
 #endif
-	/*pipeline may still not be ready because module loaded is quite late
-	* try it again. next time we till try it in iciStartDisplay,
-	* which will wait till device is ready
-	*/
-	if (m_CSIEnabled) {
-		fprintf(stderr, "Camera still not ready before play!\n");
-		m_CSIEnabled = ConfigureCSI();
-	}
+	m_CSIEnabled = 0;
 	// Create a thread for the camera dispaly and run.
 	m_pThreadGrpCsiRVC = new(boost::thread_group);
 	m_pThreadCsiRVC = m_pThreadGrpCsiRVC->create_thread(
@@ -174,7 +165,7 @@ namespace earlyapp
 	dmesgLogPrint("EA: Csi displayCamera\n");
 #endif
 
-        CsiStartDisplay(m_csiParam, GPIOClass, &m_CSIEnabled);
+        CsiStartDisplay(m_csiParam, GPIOClass, 1);
     }
 
 } // namespace

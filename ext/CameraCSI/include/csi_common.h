@@ -32,10 +32,6 @@ typedef int __s32;
 typedef unsigned short __u16;
 typedef unsigned char __u8;
 
-
-int initWlConnection(void);
-int disconnectWlConnection(void);
-
 enum render_type {
         RENDER_TYPE_WL,
         RENDER_TYPE_GL,
@@ -47,9 +43,8 @@ struct set_up {
         unsigned int ow, oh;
 };
 
-int CsiStartDisplay(struct set_up, void*, int*);
+int CsiStartDisplay(struct set_up, void*, int);
 void CsiStopDisplay(int);
 int ConfigureCSI(void);
-int initCsiWlConnection(void);
 
 #endif
