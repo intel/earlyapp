@@ -2096,15 +2096,7 @@ int initCsiWlConnection(void)
         return 0;
 }
 
-int ConfigureCSI(void)
-{
-	int stat = -1;
-	parse_input_args(&s);
-	stat  = media_controller_init(&s);
-	return stat;
-}
-
-int CsiStartDisplay(struct  set_up param, void *gpioclass, int *ici_rdy)
+int CsiStartDisplay(struct  set_up param, void *gpioclass, int start)
 {
 	GET_TS(time_measurements.app_start_time);
 	struct v4l2_device v4l2;
@@ -2120,11 +2112,9 @@ int CsiStartDisplay(struct  set_up param, void *gpioclass, int *ici_rdy)
 	g_gpioclass = gpioclass;
 
 	GET_TS(time_measurements.before_md_init_time);
-
-
-	if ((*ici_rdy)) {
-		media_controller_init(&s);
-	}
+	
+	parse_input_args(&s);
+	media_controller_init(&s);
 
 	memset(&v4l2, 0, sizeof v4l2);
 	v4l2.devname = s.video;
@@ -2161,6 +2151,7 @@ int CsiStartDisplay(struct  set_up param, void *gpioclass, int *ici_rdy)
 	}
 
 	struct buffer buffers[s.buffer_count];
+	memset(buffers, 0, sizeof(struct buffer) * s.buffer_count);
 
 	for(i = 0; i < (int) s.buffer_count; i++) {
 		buffers[i].index = i;
@@ -2212,6 +2203,8 @@ int CsiStartDisplay(struct  set_up param, void *gpioclass, int *ici_rdy)
 	ret = ioctl(v4l2.fd, VIDIOC_STREAMON, &type);
 	BYE_ON(ret < 0, "STREAMON failed: %s\n", ERRSTR);
 	GET_TS(time_measurements.streamon_time);
+
+	running = start;
 
 	if(pthread_create(&poll_thread, NULL,
 				(void *) &polling_thread, (void *) &display)) {
@@ -2312,17 +2305,11 @@ restart:
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
 
-	if (prev_time)
-		free(prev_time);
-
 	prev_time = calloc(1, sizeof(struct timeval));
 	if(!prev_time) {
 		fprintf(stderr, "Cannot allocate memory: %m\n");
 		exit(EXIT_FAILURE);
 	}
-
-	if (curr_time)
-		free(curr_time);
 
 	curr_time = calloc(1, sizeof(struct timeval));
 	if(!curr_time) {
