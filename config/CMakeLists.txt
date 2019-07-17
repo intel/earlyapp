@@ -63,7 +63,9 @@ SET(SCRIPT_FILES
     early_ipu.sh
     kpi_gpio.sh
     resume_sync
-    mem_hot_add.sh)
+    mem_hot_add.sh
+    early_audio_native.sh
+    early_ipu_native.sh)
 
 # Install earlyapp.service
 INSTALL(FILES ${EAS_SRC}
